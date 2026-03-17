@@ -9,15 +9,21 @@ import AdminDashboard from './components/AdminDashboard';
 import ChatWidget from './components/ChatWidget';
 import { Loader2 } from 'lucide-react';
 
-export default function App() {
-  // Simple routing logic for MVP
-  // / -> Login Page
-  // /select-company -> Company Selector (for admin to add more)
-  // /:slug -> Booking Page
-  // /:slug/admin -> Admin Dashboard
+// Material Symbols Icons
+const MaterialIcon = ({ icon, filled = false, className = '' }: { icon: string; filled?: boolean; className?: string }) => (
+  <span
+    className={`material-symbols-outlined ${className}`}
+    style={{ fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0" }}
+  >
+    {icon}
+  </span>
+);
 
+const SmartToy = () => <MaterialIcon icon="smart_toy" className="w-5 h-5" />;
+const Bolt = () => <MaterialIcon icon="bolt" className="w-4 h-4" />;
+
+export default function App() {
   const [path, setPath] = useState(window.location.pathname);
-  // Login state - empresa selecionada pelo usuário
   const [loggedInTenant, setLoggedInTenant] = useState<any>(null);
 
   useEffect(() => {
@@ -33,7 +39,6 @@ export default function App() {
 
   const handleLogin = (tenant: any) => {
     setLoggedInTenant(tenant);
-    // Redirecionar para página de chat (página principal)
     navigate(`/${tenant.slug}`);
   };
 
@@ -42,7 +47,6 @@ export default function App() {
     navigate('/');
   };
 
-  // Se não está logado, mostrar tela de login
   if (path === '/') {
     return <LoginPage onLogin={handleLogin} />;
   }
@@ -51,7 +55,6 @@ export default function App() {
     return <CreateCompany onNavigate={navigate} />;
   }
 
-  // Se está na página inicial após login, mostrar dashboard da empresa logada
   if (path === '/home' && loggedInTenant) {
     return <TenantApp tenant={loggedInTenant} onNavigate={navigate} onLogout={handleLogout} />;
   }
@@ -59,12 +62,10 @@ export default function App() {
   const parts = path.split('/').filter(Boolean);
   const slug = parts[0];
 
-  // Se não tem slug, volta para login
   if (!slug) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  // Qualquer URL leva para o chat da empresa (não existe página pública)
   return <TenantApp slug={slug} onNavigate={navigate} onLogout={handleLogout} />;
 }
 
@@ -88,56 +89,83 @@ function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Atendly AI</h1>
-          <p className="text-xl text-gray-600">Selecione sua empresa para continuar</p>
+    <div className="min-h-screen bg-[#050505] relative overflow-hidden">
+      {/* Grid Background */}
+      <div className="fixed inset-0 grid-bg pointer-events-none z-0"></div>
+
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
+        <div className="max-w-md w-full space-y-12">
+          {/* Logo */}
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="size-12 bg-[#F97316] flex items-center justify-center text-black">
+                <SmartToy />
+              </div>
+            </div>
+            <h1 className="text-white text-4xl font-bold tracking-tighter uppercase">Atendly AI</h1>
+            <p className="text-[#F97316] text-[10px] font-mono uppercase tracking-[0.2em]">Intelligence</p>
+          </div>
+
+          {/* Login Card */}
+          <div className="relative">
+            {/* Beam effect on left */}
+            <div className="beam-border-v h-full -left-6 top-0"></div>
+
+            <div className="bg-[#0A0A0A] border border-white/10 p-8">
+              <h2 className="text-white text-xs font-mono uppercase tracking-[0.2em] mb-6">
+                Selecione sua empresa
+              </h2>
+
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#F97316]" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">Empresa</label>
+                    <select
+                      value={selectedTenant?.id || ''}
+                      onChange={(e) => {
+                        const tenant = tenants.find(t => t.id === parseInt(e.target.value));
+                        setSelectedTenant(tenant);
+                      }}
+                      className="w-full p-4 input-dark text-sm bg-[#0A0A0A]"
+                    >
+                      <option value="" className="bg-[#0A0A0A]">Selecione uma empresa...</option>
+                      {tenants.map(tenant => (
+                        <option key={tenant.id} value={tenant.id} className="bg-[#0A0A0A]">
+                          {tenant.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleLogin}
+                    disabled={!selectedTenant}
+                    className="w-full btn-beam py-4 px-6 text-white text-[10px] font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="btn-inner"></div>
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      <Bolt />
+                      Entrar
+                    </span>
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <button
+                      onClick={() => window.location.href = '/new-company'}
+                      className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-[#F97316] transition-colors"
+                    >
+                      + Criar nova empresa
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-          </div>
-        ) : (
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Empresa</label>
-              <select
-                value={selectedTenant?.id || ''}
-                onChange={(e) => {
-                  const tenant = tenants.find(t => t.id === parseInt(e.target.value));
-                  setSelectedTenant(tenant);
-                }}
-                className="w-full p-3 border rounded-lg bg-gray-50"
-              >
-                <option value="">Selecione uma empresa...</option>
-                {tenants.map(tenant => (
-                  <option key={tenant.id} value={tenant.id}>
-                    {tenant.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={handleLogin}
-              disabled={!selectedTenant}
-              className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Entrar
-            </button>
-
-            <div className="text-center">
-              <button
-                onClick={() => window.location.href = '/new-company'}
-                className="text-sm text-gray-500 hover:text-gray-900"
-              >
-                Não encontrou? Criar nova empresa
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -156,7 +184,7 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
       const res = await fetch('/api/tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug, segment, theme_color: '#000000' })
+        body: JSON.stringify({ name, slug, segment, theme_color: '#F97316' })
       });
       if (res.ok) {
         onNavigate(`/${slug}/admin`);
@@ -171,58 +199,88 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Criar Nova Empresa</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa</label>
-            <input 
-              required
-              className="w-full p-2 border rounded-lg"
-              value={name}
-              onChange={e => {
-                setName(e.target.value);
-                setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'));
-              }}
-            />
+    <div className="min-h-screen bg-[#050505] relative overflow-hidden">
+      {/* Grid Background */}
+      <div className="fixed inset-0 grid-bg pointer-events-none z-0"></div>
+
+      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-md">
+          {/* Beam effect */}
+          <div className="beam-border-v h-full -left-6 top-0"></div>
+
+          <div className="bg-[#0A0A0A] border border-white/10 p-8">
+            <h2 className="text-white text-2xl font-medium uppercase tracking-tight mb-2">
+              Nova Empresa
+            </h2>
+            <p className="text-neutral-500 text-sm mb-8">Configure sua empresa no Atendly AI</p>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
+                  Nome da Empresa
+                </label>
+                <input
+                  required
+                  className="w-full p-4 input-dark text-white text-sm"
+                  value={name}
+                  onChange={e => {
+                    setName(e.target.value);
+                    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'));
+                  }}
+                  placeholder="Nome da sua empresa"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
+                  URL (Slug)
+                </label>
+                <input
+                  required
+                  className="w-full p-4 input-dark text-white text-sm bg-[#050505]"
+                  value={slug}
+                  onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                  placeholder="sua-empresa"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
+                  Segmento
+                </label>
+                <select
+                  className="w-full p-4 input-dark text-white text-sm bg-[#0A0A0A]"
+                  value={segment}
+                  onChange={e => setSegment(e.target.value)}
+                >
+                  <option value="general" className="bg-[#0A0A0A]">Geral</option>
+                  <option value="beauty" className="bg-[#0A0A0A]">Beleza / Estética</option>
+                  <option value="health" className="bg-[#0A0A0A]">Saúde</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full btn-beam py-4 px-6 text-white text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+              >
+                <div className="btn-inner"></div>
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <Bolt />
+                  {loading ? 'Criando...' : 'Criar Empresa'}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('/')}
+                className="w-full text-center text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-white transition-colors py-2"
+              >
+                Cancelar
+              </button>
+            </form>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">URL (Slug)</label>
-            <input 
-              required
-              className="w-full p-2 border rounded-lg bg-gray-50"
-              value={slug}
-              onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Segmento</label>
-            <select 
-              className="w-full p-2 border rounded-lg"
-              value={segment}
-              onChange={e => setSegment(e.target.value)}
-            >
-              <option value="general">Geral</option>
-              <option value="beauty">Beleza / Estética</option>
-              <option value="health">Saúde</option>
-            </select>
-          </div>
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50"
-          >
-            {loading ? 'Criando...' : 'Criar Empresa'}
-          </button>
-          <button 
-            type="button"
-            onClick={() => onNavigate('/')}
-            className="w-full text-gray-500 text-sm hover:text-gray-900"
-          >
-            Cancelar
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -235,62 +293,60 @@ function TenantApp({ slug, onNavigate, onLogout, loggedInTenant }: {
   tenant?: any;
   loggedInTenant?: any;
 }) {
-  // Se recebeu tenant direto (da página /home), usar ele diretamente
   const directTenant = loggedInTenant;
-
-  // Caso contrário, buscar pelo slug
   const { tenant: fetchedTenant, loading } = useTenant(slug || directTenant?.slug);
-
   const tenant = directTenant || fetchedTenant;
   const { services, professionals, appointments, refreshAppointments } = useTenantData(tenant?.id);
 
-  // Loading state
   if (loading && !tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#F97316]" />
       </div>
     );
   }
 
   if (!tenant) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Empresa não encontrada</h2>
-        <button onClick={() => onNavigate('/')} className="text-blue-600 hover:underline">Voltar ao início</button>
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center">
+        <h2 className="text-white text-xl font-medium uppercase tracking-tight mb-4">Empresa não encontrada</h2>
+        <button onClick={() => onNavigate('/')} className="text-[#F97316] hover:underline text-sm font-mono uppercase tracking-widest">
+          Voltar ao início
+        </button>
       </div>
     );
   }
 
-  // Se tem /admin na URL, mostrar dashboard
   const isAdmin = window.location.pathname.includes('/admin');
 
   if (isAdmin) {
     return <AdminDashboard tenant={tenant} appointments={appointments} onLogout={onLogout} />;
   }
 
-  // Página principal = apenas Chat (via chat ou WhatsApp)
   const tenantSlug = slug || tenant?.slug;
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header com link para Admin */}
-      <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-3">
+    <div className="min-h-screen bg-[#050505]">
+      {/* Grid Background */}
+      <div className="fixed inset-0 grid-bg pointer-events-none z-0"></div>
+
+      {/* Header */}
+      <header className="relative z-10 glass border-b border-white/5 px-6 py-4">
         <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tenant.theme_color }} />
+          <h1 className="text-white text-base font-medium uppercase tracking-tight flex items-center gap-3">
+            <div className="w-2 h-2 bg-[#F97316]"></div>
             {tenant.name}
           </h1>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => onNavigate(`/${tenantSlug}/admin`)}
-              className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+              className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-white px-4 py-2 border border-white/10 hover:border-[#F97316]/50 transition-all"
             >
               Configurar Agentes
             </button>
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="text-sm text-red-600 hover:text-red-700 px-3 py-1 rounded border border-red-200 hover:bg-red-50"
+                className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-red-500 px-4 py-2 border border-white/10 hover:border-red-500/50 transition-all"
               >
                 Sair
               </button>

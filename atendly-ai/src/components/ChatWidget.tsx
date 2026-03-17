@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Bot, ChevronDown } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tenant } from '../types';
 
@@ -11,6 +11,19 @@ interface Message {
   role: 'user' | 'model';
   text: string;
 }
+
+// Material Symbols Icons
+const MaterialIcon = ({ icon, filled = false, className = '' }: { icon: string; filled?: boolean; className?: string }) => (
+  <span
+    className={`material-symbols-outlined ${className}`}
+    style={{ fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0" }}
+  >
+    {icon}
+  </span>
+);
+
+const Bot = () => <MaterialIcon icon="smart_toy" className="w-4 h-4" />;
+const Bolt = () => <MaterialIcon icon="bolt" className="w-3 h-3" />;
 
 export default function ChatWidget({ tenant }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +44,6 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
       .then(data => {
         setAgents(data);
         if (data.length > 0) {
-          // Use tenant's default_agent_id if available, otherwise first agent
           const defaultId = tenant.default_agent_id;
           const validDefault = defaultId && data.some((a: any) => a.id === defaultId);
           setSelectedAgentId(validDefault ? defaultId : data[0].id);
@@ -59,7 +71,6 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
     setIsLoading(true);
 
     try {
-      // Se não há agente selecionado, usar o primeiro disponível
       const agentIdToUse = selectedAgentId || (agents.length > 0 ? agents[0].id : null);
 
       const res = await fetch('/api/chat', {
@@ -74,7 +85,6 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
       });
 
       const data = await res.json();
-      // Support both text and response fields
       const responseText = data.text || data.response || 'Erro ao processar resposta';
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
     } catch (error) {
@@ -84,6 +94,8 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
     }
   };
 
+  const themeColor = tenant.theme_color || '#F97316';
+
   return (
     <>
       <AnimatePresence>
@@ -92,25 +104,25 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-20 right-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50 flex flex-col"
+            className="fixed bottom-20 right-4 w-80 md:w-96 bg-[#0A0A0A] border border-white/10 shadow-2xl z-50 flex flex-col"
             style={{ height: '500px' }}
           >
             {/* Header */}
-            <div className="p-3 flex justify-between items-center text-white gap-2" style={{ backgroundColor: tenant.theme_color }}>
+            <div className="p-3 flex justify-between items-center gap-2 border-b border-white/5" style={{ backgroundColor: themeColor }}>
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
+                <div className="w-2 h-2 bg-white/90 rounded-full animate-pulse flex-shrink-0" />
                 {agents.length > 0 ? (
                   <div className="relative min-w-0">
                     <button
                       onClick={() => setShowAgentSelector(!showAgentSelector)}
-                      className="flex items-center gap-1 hover:bg-white/20 rounded px-2 py-1 transition-colors"
+                      className="flex items-center gap-1 hover:bg-white/10 rounded px-2 py-1 transition-colors"
                     >
-                      <Bot className="w-4 h-4 flex-shrink-0" />
-                      <span className="text-sm font-medium truncate">{selectedAgent?.name || 'Selecionar'}</span>
-                      <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                      <Bot />
+                      <span className="text-xs font-mono uppercase tracking-wider text-black truncate">{selectedAgent?.name || 'Selecionar'}</span>
+                      <ChevronDown className="w-3 h-3 text-black/70" />
                     </button>
                     {showAgentSelector && (
-                      <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border overflow-hidden z-10">
+                      <div className="absolute top-full left-0 mt-1 w-48 bg-[#0A0A0A] border border-white/10 shadow-lg z-10">
                         {agents.map((agent: any) => (
                           <button
                             key={agent.id}
@@ -119,8 +131,8 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
                               setShowAgentSelector(false);
                               setMessages([{ role: 'model', text: `Olá! Agora você está falando com o ${agent.name}. Como posso ajudar?` }]);
                             }}
-                            className={`w-full text-left px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 ${
-                              agent.id === selectedAgentId ? 'bg-gray-50' : ''
+                            className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-wider text-neutral-400 hover:bg-white/5 hover:text-white transition-colors ${
+                              agent.id === selectedAgentId ? 'text-white' : ''
                             }`}
                           >
                             {agent.name}
@@ -130,23 +142,23 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
                     )}
                   </div>
                 ) : (
-                  <span className="font-medium">Assistente IA</span>
+                  <span className="text-xs font-mono uppercase tracking-wider text-black">Assistente IA</span>
                 )}
               </div>
-              <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 rounded-full p-1 transition-colors flex-shrink-0">
-                <X className="w-5 h-5" />
+              <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 rounded-full p-1 transition-colors flex-shrink-0">
+                <X className="w-5 h-5 text-black" />
               </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#050505]">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div 
-                    className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-gray-900 text-white rounded-tr-none' 
-                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
+                  <div
+                    className={`max-w-[80%] p-3 text-xs ${
+                      msg.role === 'user'
+                        ? 'bg-[#F97316] text-black'
+                        : 'bg-[#0A0A0A] border border-white/10 text-neutral-300'
                     }`}
                   >
                     {msg.text}
@@ -155,8 +167,8 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 p-3 rounded-2xl rounded-tl-none shadow-sm">
-                    <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  <div className="bg-[#0A0A0A] border border-white/10 p-3">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#F97316]" />
                   </div>
                 </div>
               )}
@@ -164,8 +176,8 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
             </div>
 
             {/* Input */}
-            <div className="p-3 bg-white border-t border-gray-100">
-              <form 
+            <div className="p-3 bg-[#0A0A0A] border-t border-white/5">
+              <form
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                 className="flex gap-2"
               >
@@ -174,15 +186,15 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Digite sua mensagem..."
-                  className="flex-1 px-4 py-2 rounded-full border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none text-sm bg-gray-50"
+                  className="flex-1 px-4 py-2 input-dark text-xs font-mono uppercase tracking-wider"
                 />
-                <button 
+                <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="p-2 rounded-full bg-gray-900 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
-                  style={{ backgroundColor: tenant.theme_color }}
+                  className="p-2 border border-white/10 text-neutral-400 hover:text-[#F97316] hover:border-[#F97316]/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+                  style={{ backgroundColor: input.trim() && !isLoading ? themeColor : 'transparent' }}
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4" style={{ color: input.trim() && !isLoading ? 'black' : 'currentColor' }} />
                 </button>
               </form>
             </div>
@@ -194,10 +206,10 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 p-4 rounded-full shadow-lg text-white z-50 flex items-center justify-center transition-colors"
-        style={{ backgroundColor: tenant.theme_color }}
+        className="fixed bottom-4 right-4 p-4 shadow-lg z-50 flex items-center justify-center transition-all"
+        style={{ backgroundColor: themeColor }}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {isOpen ? <X className="w-6 h-6 text-black" /> : <MessageCircle className="w-6 h-6 text-black" />}
       </motion.button>
     </>
   );
