@@ -61,10 +61,19 @@ export async function initDb() {
         slug TEXT UNIQUE NOT NULL,
         segment TEXT NOT NULL,
         theme_color TEXT DEFAULT '#000000',
-        ai_context TEXT
+        ai_context TEXT,
+        default_agent_id INTEGER REFERENCES agents(id)
       );
     `);
     console.log("Tenants table created/verified");
+
+    // Add default_agent_id column if not exists (migration for existing tables)
+    try {
+      await db.query(`ALTER TABLE tenants ADD COLUMN IF NOT EXISTS default_agent_id INTEGER REFERENCES agents(id)`);
+      console.log("Migration: default_agent_id column added to tenants");
+    } catch (err) {
+      console.log("Migration: default_agent_id column may already exist or agents table not ready");
+    }
 
     // Professionals (Profissionais)
     console.log("Creating professionals table...");
@@ -135,26 +144,48 @@ export async function initDb() {
         role TEXT NOT NULL, -- 'user', 'assistant', 'system'
         content TEXT NOT NULL,
         platform TEXT NOT NULL, -- 'whatsapp', 'web'
+        agent_id INTEGER REFERENCES agents(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log("messages table created/verified");
+
+    // Migration: Add agent_id column if not exists
+    try {
+      await db.query(`ALTER TABLE messages ADD COLUMN IF NOT EXISTS agent_id INTEGER REFERENCES agents(id)`);
+      console.log("Migration: agent_id column added to messages");
+    } catch (err) {
+      console.log("Migration: messages agent_id column may already exist");
+    }
 
     // Agents (Multi-Agent System)
     console.log("Creating agents table...");
     await db.query(`
       CREATE TABLE IF NOT EXISTS agents (
         id SERIAL PRIMARY KEY,
-        tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+        tenant_id INTEGER REFERENCES tenants(id),
         name TEXT NOT NULL,
         description TEXT,
         system_prompt TEXT,
         agent_type TEXT NOT NULL DEFAULT 'custom',
+        personality JSONB,
+        is_global BOOLEAN DEFAULT false,
+        parent_agent_id INTEGER REFERENCES agents(id),
         is_active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log("agents table created/verified");
+
+    // Migration: Add personality, is_global, parent_agent_id columns if not exists
+    try {
+      await db.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS personality JSONB`);
+      await db.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT false`);
+      await db.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS parent_agent_id INTEGER REFERENCES agents(id)`);
+      console.log("Migration: personality, is_global, parent_agent_id columns added to agents");
+    } catch (err) {
+      console.log("Migration: agents columns may already exist");
+    }
 
     // Agent Documents (RAG)
     console.log("Creating agent_documents table...");
@@ -166,11 +197,20 @@ export async function initDb() {
         content TEXT,
         file_url TEXT,
         website_url TEXT,
+        is_global BOOLEAN DEFAULT false,
         processed_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log("agent_documents table created/verified");
+
+    // Migration: Add is_global column if not exists
+    try {
+      await db.query(`ALTER TABLE agent_documents ADD COLUMN IF NOT EXISTS is_global BOOLEAN DEFAULT false`);
+      console.log("Migration: is_global column added to agent_documents");
+    } catch (err) {
+      console.log("Migration: agent_documents is_global column may already exist");
+    }
 
     // Try to enable pgvector extension (may require superuser)
     try {
