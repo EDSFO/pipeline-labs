@@ -1,21 +1,55 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { db } from './db';
 
-// Initialize MiniMax (compatible with Anthropic API)
-const apiKey = process.env.MINIMAX_API_KEY;
-const baseURL = process.env.MINIMAX_BASE_URL || 'https://api.minimax.io/anthropic';
+// Deep Seek API Configuration
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+const DEEPSEEK_BASE_URL = 'https://api.deepseek.com';
+const DEEPSEEK_MODEL = 'deepseek-chat';
 
-if (!apiKey) {
-  throw new Error('MINIMAX_API_KEY environment variable is required');
+if (!DEEPSEEK_API_KEY) {
+  throw new Error('DEEPSEEK_API_KEY environment variable is required');
 }
 
-const ai = new Anthropic({
-  apiKey,
-  baseURL,
-  defaultHeaders: {
-    'Content-Type': 'application/json',
+// Helper function to call Deep Seek API (OpenAI-compatible)
+async function callDeepSeek(messages: any[], system?: string, tools?: any[]) {
+  const url = `${DEEPSEEK_BASE_URL}/v1/chat/completions`;
+
+  const payload: any = {
+    model: DEEPSEEK_MODEL,
+    messages: messages,
+    max_tokens: 4096,
+  };
+
+  if (system) {
+    payload.messages.unshift({ role: 'system', content: system });
   }
-});
+
+  if (tools && tools.length > 0) {
+    payload.tools = tools.map(t => ({
+      type: 'function',
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: t.input_schema
+      }
+    }));
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Deep Seek API error: ${response.status} - ${error}`);
+  }
+
+  return await response.json();
+}
 
 // Tool definitions for Claude (MiniMax)
 const tools = [
@@ -153,13 +187,8 @@ export async function extractInfoFromUrl(url: string) {
       .trim()
       .slice(0, 50000);
 
-    const model = process.env.MINIMAX_MODEL || 'MiniMax-M2.1';
-
-    const result = await ai.messages.create({
-      model,
-      max_tokens: 4096,
-      system: "Você é um assistente de IA especializado em analisar websites de empresas.",
-      messages: [{
+    const result = await callDeepSeek(
+      [{
         role: 'user',
         content: `Analise o conteúdo deste site de uma empresa e extraia as informações relevantes para criar uma Base de Conhecimento (RAG) para um assistente de IA.
 
@@ -174,10 +203,11 @@ Formate a saída como um texto corrido e organizado, pronto para ser inserido no
 
 Conteúdo do site:
 ${cleanText}`
-      }]
-    });
+      }],
+      "Você é um assistente de IA especializado em analisar websites de empresas."
+    );
 
-    return result.content[0].type === 'text' ? result.content[0].text : 'Failed to extract info';
+    return result.choices[0].message.content;
   } catch (error) {
     console.error("Error scanning website:", error);
     throw new Error("Failed to scan website");
@@ -243,9 +273,6 @@ Hoje é ${new Date().toLocaleDateString('pt-BR')}.
     }
   }
 
-  const model = process.env.MINIMAX_MODEL || 'MiniMax-M2.1';
-
-  // Convert history to Anthropic format
   const messages = history.map(h => ({
     role: h.role === 'model' ? 'assistant' : h.role,
     content: h.text
@@ -254,42 +281,28 @@ Hoje é ${new Date().toLocaleDateString('pt-BR')}.
   messages.push({ role: 'user', content: message });
 
   try {
-    const result = await ai.messages.create({
-      model,
-      max_tokens: 4096,
-      system: systemInstruction,
-      messages,
-      tools
-    });
+    const result = await callDeepSeek(messages, systemInstruction, tools);
 
     // Handle tool use
-    const toolUse = result.content.find(c => c.type === 'tool_use');
+    const toolCall = result.choices[0].message.tool_calls?.[0];
 
-    if (toolUse) {
-      const toolResult = await executeTool(toolUse.name, toolUse.input);
+    if (toolCall) {
+      const toolName = toolCall.function.name;
+      const toolArgs = JSON.parse(toolCall.function.arguments);
+      const toolResult = await executeTool(toolName, toolArgs);
 
-      const toolResultMessage = {
-        role: 'user',
-        content: [{
-          type: 'tool_result',
-          tool_use_id: toolUse.id,
-          content: JSON.stringify(toolResult)
-        }]
-      };
+      // Add tool result to messages
+      const updatedMessages = [
+        ...messages,
+        { role: 'assistant', content: result.choices[0].message.content, tool_calls: result.choices[0].message.tool_calls },
+        { role: 'tool', tool_call_id: toolCall.id, content: JSON.stringify(toolResult) }
+      ];
 
-      const finalResult = await ai.messages.create({
-        model,
-        max_tokens: 4096,
-        system: systemInstruction,
-        messages: [...messages, { role: 'assistant', content: result.content }, toolResultMessage],
-        tools
-      });
-
-      return finalResult.content[0].type === 'text' ? finalResult.content[0].text : 'Erro ao processar resposta';
+      const finalResult = await callDeepSeek(updatedMessages, systemInstruction, tools);
+      return finalResult.choices[0].message.content || 'Erro ao processar resposta';
     }
 
-    const textContent = result.content.find(c => c.type === 'text');
-    return textContent ? textContent.text : 'Erro ao processar resposta';
+    return result.choices[0].message.content || 'Erro ao processar resposta';
 
   } catch (error) {
     console.error("AI Error:", error);
@@ -299,8 +312,6 @@ Hoje é ${new Date().toLocaleDateString('pt-BR')}.
 
 // Detect which agent type best matches the message (for automatic routing)
 export async function detectAgentType(message: string, tenant_id: number): Promise<string> {
-  const model = process.env.MINIMAX_MODEL || 'MiniMax-M2.1';
-
   const systemPrompt = `Analise a mensagem do cliente e determine qual tipo de agente é mais adequado para atender.
 
 Tipos disponíveis:
@@ -312,14 +323,9 @@ Tipos disponíveis:
 Responda apenas com o nome do tipo de agente (atendimento/vendas/marketing/suporte).`;
 
   try {
-    const result = await ai.messages.create({
-      model,
-      max_tokens: 100,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: message }]
-    });
+    const result = await callDeepSeek([{ role: 'user', content: message }], systemPrompt);
 
-    const text = result.content[0].type === 'text' ? result.content[0].text.toLowerCase() : '';
+    const text = result.choices[0].message.content?.toLowerCase() || '';
 
     if (text.includes('vendas')) return 'vendas';
     if (text.includes('marketing')) return 'marketing';
