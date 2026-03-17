@@ -168,11 +168,11 @@ async function startServer() {
 
   // Update Tenant (Settings & AI Context)
   app.put("/api/tenants/:id", async (req, res) => {
-    const { name, theme_color, ai_context } = req.body;
+    const { name, theme_color, ai_context, default_agent_id } = req.body;
     try {
       await db.query(
-        "UPDATE tenants SET name = $1, theme_color = $2, ai_context = $3 WHERE id = $4",
-        [name, theme_color, ai_context, req.params.id]
+        "UPDATE tenants SET name = $1, theme_color = $2, ai_context = $3, default_agent_id = $4 WHERE id = $5",
+        [name, theme_color, ai_context, default_agent_id || null, req.params.id]
       );
       res.json({ success: true });
     } catch (error) {
@@ -399,17 +399,41 @@ async function startServer() {
   app.post("/api/chat", async (req, res) => {
     const { message, tenant_id, history, agent_id, auto_route } = req.body;
     try {
+      let response = '';
+      let agentIdUsed: number | null = null;
+
       if (agent_id || auto_route) {
         // Use multi-agent chat
         const result = await handleMultiAgentChat(message, tenant_id, history || [], {
           agent_id,
           auto_route
         });
-        res.json({ text: result.response, ...result });
+        response = result.response;
+        agentIdUsed = result.agent_id_used;
+        res.json({ text: response, ...result });
       } else {
         // Legacy single-agent mode
-        const response = await handleChat(message, tenant_id, history || []);
+        response = await handleChat(message, tenant_id, history || []);
         res.json({ text: response });
+      }
+
+      // Salvar mensagens no banco com agent_id
+      if (agentIdUsed) {
+        try {
+          await db.query(
+            `INSERT INTO messages (tenant_id, agent_id, contact_id, role, content, platform)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [tenant_id, agentIdUsed, 'web_session', 'user', message, 'web']
+          );
+          await db.query(
+            `INSERT INTO messages (tenant_id, agent_id, contact_id, role, content, platform)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [tenant_id, agentIdUsed, 'web_session', 'assistant', response, 'web']
+          );
+        } catch (saveError) {
+          console.error("Error saving messages to database:", saveError);
+          // Don't fail the request if message saving fails
+        }
       }
     } catch (error) {
       console.error(error);

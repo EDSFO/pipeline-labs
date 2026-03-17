@@ -173,6 +173,87 @@ async function executeTool(toolName: string, args: any) {
   }
 }
 
+// Helper function to build RAG context (hybrid - global + local documents)
+async function buildRAGContext(agentId: number): Promise<string> {
+  // 1. Buscar agente e seu parent (se existir)
+  const agentRes = await db.query('SELECT * FROM agents WHERE id = $1', [agentId]);
+  const agent = agentRes.rows[0];
+
+  if (!agent) return '';
+
+  let contextParts: string[] = [];
+
+  // 2. Se tem parent_agent_id, buscar documentos globais do template
+  if (agent.parent_agent_id) {
+    const globalDocs = await db.query(
+      `SELECT content FROM agent_documents WHERE agent_id = $1 AND is_global = true ORDER BY created_at DESC LIMIT 5`,
+      [agent.parent_agent_id]
+    );
+    if (globalDocs.rows.length > 0) {
+      contextParts.push('=== BASE DE CONHECIMENTO GLOBAL ===');
+      contextParts.push(globalDocs.rows.map((d: any) => d.content).join('\n\n'));
+    }
+  }
+
+  // 3. Buscar documentos locais do agente
+  const localDocs = await db.query(
+    `SELECT content FROM agent_documents WHERE agent_id = $1 AND is_global = false ORDER BY created_at DESC LIMIT 5`,
+    [agentId]
+  );
+  if (localDocs.rows.length > 0) {
+    contextParts.push('=== CONHECIMENTO ESPECÍFICO ===');
+    contextParts.push(localDocs.rows.map((d: any) => d.content).join('\n\n'));
+  }
+
+  return contextParts.join('\n\n');
+}
+
+// Helper function to apply personality to system prompt
+function applyPersonality(systemPrompt: string, personality: any): string {
+  if (!personality) return systemPrompt;
+
+  // Parse personality if it's a string
+  const parsed = typeof personality === 'string' ? JSON.parse(personality) : personality;
+
+  const personalityInstructions = [];
+
+  // Tom de voz
+  if (parsed.tone) {
+    personalityInstructions.push(`Tom de voz: ${parsed.tone}`);
+  }
+
+  // Vocabulário
+  if (parsed.vocabulary && parsed.vocabulary.length > 0) {
+    personalityInstructions.push(`Palavras-chave a usar: ${parsed.vocabulary.join(', ')}`);
+  }
+
+  // Saudação
+  if (parsed.greeting) {
+    personalityInstructions.push(`Saudação inicial: ${parsed.greeting}`);
+  }
+
+  // Despedida
+  if (parsed.closing) {
+    personalityInstructions.push(`Fechamento: ${parsed.closing}`);
+  }
+
+  // Regras
+  if (parsed.rules && parsed.rules.length > 0) {
+    personalityInstructions.push(`Regras a seguir:\n${parsed.rules.map((r: string) => `- ${r}`).join('\n')}`);
+  }
+
+  // Proibidos
+  if (parsed.forbidden && parsed.forbidden.length > 0) {
+    personalityInstructions.push(`Evitar:\n${parsed.forbidden.map((f: string) => `- ${f}`).join('\n')}`);
+  }
+
+  if (personalityInstructions.length > 0) {
+    return systemPrompt + '\n\n=== PERSONALIDADE ===\n' + personalityInstructions.join('\n\n');
+  }
+
+  return systemPrompt;
+}
+
 // New function to scan website
 export async function extractInfoFromUrl(url: string) {
   try {
@@ -221,15 +302,59 @@ export async function handleChat(message: string, tenant_id: number, history: an
 
   let systemInstruction = '';
   let useRAG = true;
+  let personality: any = null;
 
   // If agent_id is provided, use that agent's configuration
   if (agent_id) {
-    const agentRes = await db.query('SELECT * FROM agents WHERE id = $1 AND tenant_id = $2', [agent_id, tenant_id]);
+    // Buscar agente onde tenant_id = $2 OR is_global = true
+    const agentRes = await db.query(
+      'SELECT * FROM agents WHERE id = $1 AND (tenant_id = $2 OR is_global = true)',
+      [agent_id, tenant_id]
+    );
     const agent = agentRes.rows[0];
 
-    if (agent && agent.system_prompt) {
-      systemInstruction = agent.system_prompt;
-      useRAG = agent.agent_type !== 'custom'; // Only use RAG for template agents
+    if (agent) {
+      // Se tem parent_agent_id, buscar system_prompt e personality do pai
+      if (agent.parent_agent_id) {
+        const parentRes = await db.query('SELECT system_prompt, personality FROM agents WHERE id = $1', [agent.parent_agent_id]);
+        if (parentRes.rows.length > 0) {
+          const parent = parentRes.rows[0];
+          // Usar prompt do pai se o agente não tem prompt próprio
+          if (!agent.system_prompt && parent.system_prompt) {
+            systemInstruction = parent.system_prompt;
+          }
+          // Usar personality do pai se o agente não tem
+          if (!agent.personality && parent.personality) {
+            personality = parent.personality;
+          }
+        }
+      }
+
+      // Parse personality (string ou objeto)
+      if (agent.personality) {
+        personality = typeof agent.personality === 'string' ? JSON.parse(agent.personality) : agent.personality;
+      }
+
+      // Se ainda não temos system prompt, usar o do agente
+      if (!systemInstruction && agent.system_prompt) {
+        systemInstruction = agent.system_prompt;
+      }
+
+      // Se ainda não temos instructions, usar default
+      if (!systemInstruction) {
+        systemInstruction = `
+Você é o assistente virtual da ${tenant.name} (${tenant.segment}).
+Seu objetivo é ajudar clientes a tirar dúvidas sobre serviços, preços e realizar agendamentos.
+
+Seja educado, prestativo e conciso.
+Use as ferramentas disponíveis para buscar informações reais de serviços e agenda.
+Para agendar, você precisa confirmar: Serviço, Profissional, Data, Hora, Nome do Cliente e Telefone.
+Hoje é ${new Date().toLocaleDateString('pt-BR')}.
+`;
+        useRAG = false;
+      } else {
+        useRAG = agent.agent_type !== 'custom'; // Only use RAG for template agents
+      }
     } else {
       // Fallback to default
       systemInstruction = `
@@ -261,15 +386,16 @@ Hoje é ${new Date().toLocaleDateString('pt-BR')}.
 `;
   }
 
-  // Add RAG context if enabled
+  // Aplicar personalidade ao system prompt
+  if (personality) {
+    systemInstruction = applyPersonality(systemInstruction, personality);
+  }
+
+  // Add RAG context if enabled - usando função híbrida
   if (useRAG && agent_id) {
-    const docsRes = await db.query(
-      'SELECT content FROM agent_documents WHERE agent_id = $1 ORDER BY created_at DESC LIMIT 5',
-      [agent_id]
-    );
-    if (docsRes.rows.length > 0) {
-      const ragContext = docsRes.rows.map((d: any) => d.content).join('\n\n');
-      systemInstruction += `\n\nBASE DE CONHECIMENTO:\n${ragContext}`;
+    const ragContext = await buildRAGContext(agent_id);
+    if (ragContext) {
+      systemInstruction += `\n\n${ragContext}`;
     }
   }
 
