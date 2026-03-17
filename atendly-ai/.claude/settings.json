@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)"
+    ]
+  },
+  "skills": {
+    "paths": [
+      "Skills/code-quality-check",
+      "Skills/software-engineer",
+      "Skills/fullstack-dev",
+      "Skills/software-architecture",
+      "Skills/marketing-expert",
+      "Skills/seo-optimizer",
+      "Skills/long-running-agent"
+    ]
+  },
+  "enabledPlugins": {
+    "zapier@claude-plugins-official": true
+  }
+}

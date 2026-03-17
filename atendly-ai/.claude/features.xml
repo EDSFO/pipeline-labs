@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<features project="Multi-Agent AI System" total="12" completed="0">
+
+  <category name="Database Schema">
+    <feature id="FEAT-001" status="complete" priority="high" session="1">
+      <description>Criar tabela agents no banco de dados</description>
+      <steps>
+        <step>Criar tabela agents com campos: id, tenant_id, name, description, system_prompt, agent_type, is_active, created_at</step>
+        <step>Adicionar migrations/001_create_agents.sql</step>
+        <step>Testar criação da tabela</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-002" status="complete" priority="high" session="1">
+      <description>Criar tabela agent_documents para RAG</description>
+      <steps>
+        <step>Criar tabela agent_documents com campos: id, agent_id, source_type, content, file_url, website_url, processed_at, created_at</step>
+        <step>Adicionar migrations/001_create_agents.sql</step>
+        <step>Testar criação da tabela</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-003" status="complete" priority="medium" session="1">
+      <description>Habilitar pgvector e criar tabela de embeddings</description>
+      <steps>
+        <step>Verificar se extensão pgvector está habilitada no Supabase</step>
+        <step>Criar tabela agent_documents_embeddings com coluna vector</step>
+        <step>Testar criação de embeddings</step>
+      </steps>
+    </feature>
+  </category>
+
+  <category name="Knowledge Base (RAG)">
+    <feature id="FEAT-004" status="complete" priority="high" session="1">
+      <description>Implementar sistema de upload de arquivos para RAG</description>
+      <steps>
+        <step>Criar endpoint POST /api/agents/:id/documents/upload</step>
+        <step>Implementar processamento de PDFs e textos</step>
+        <step>Salvar documento na tabela agent_documents</step>
+        <step>Testar upload e armazenamento</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-005" status="complete" priority="high" session="1">
+      <description>Melhorar scan de website para RAG</description>
+      <steps>
+        <step>Criar endpoint POST /api/agents/:id/documents/website</step>
+        <step>Usar função extractInfoFromUrl existente</step>
+        <step>Salvar conteúdo extraído como documento</step>
+        <step>Testar com diferentes websites</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-006" status="pending" priority="medium">
+      <description>Implementar busca semântica com embeddings</description>
+      <steps>
+        <step>Integrar MiniMax text-embedding API</step>
+        <step>Criar função para gerar embeddings de documentos</step>
+        <step>Criar função de busca por similaridade</step>
+        <step>Testar busca semântica</step>
+      </steps>
+    </feature>
+  </category>
+
+  <category name="Agent System">
+    <feature id="FEAT-007" status="complete" priority="high" session="1">
+      <description>Criar sistema de templates de agentes</description>
+      <steps>
+        <step>Criar arquivo com templates predefinidos (Marketing, Atendimento, Vendas, Suporte)</step>
+        <step>Criar endpoint GET /api/agents/templates</step>
+        <step>Criar endpoint POST /api/agents/from-template</step>
+        <step>Testar criação de agente a partir de template</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-008" status="complete" priority="high" session="1">
+      <description>Implementar Main Agent com routing</description>
+      <steps>
+        <step>Criar função handleMultiAgentChat em server/ai.ts</step>
+        <step>Implementar lógica de detecção de intent</step>
+        <step>Implementar routing para sub-agentes</step>
+        <step>Testar routing automático</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-009" status="pending" priority="high">
+      <description>Criar sub-agentes especializados</description>
+      <steps>
+        <step>Criar sistema de prompts por tipo de agente</step>
+        <step>Implementar ferramentas específicas por tipo</step>
+        <step>Integrar com Knowledge Base</step>
+        <step>Testar cada tipo de agente</step>
+      </steps>
+    </feature>
+  </category>
+
+  <category name="Frontend Integration">
+    <feature id="FEAT-010" status="complete" priority="high" session="1">
+      <description>Criar interface de gerenciamento de agentes</description>
+      <steps>
+        <step>Criar página de listagem de agentes</step>
+        <step>Criar formulário de criação/edição de agente</step>
+        <step>Implementar seleção de agente no chat</step>
+        <step>Testar interface completa</step>
+      </steps>
+    </feature>
+
+    <feature id="FEAT-011" status="complete" priority="high" session="1">
+      <description>Integrar chat web com múltiplos agentes</description>
+      <steps>
+        <step>Modificar componente de chat para suportar agente selecionado</step>
+        <step>Implementar menu de seleção de agente</step>
+        <step>Integrar com handleMultiAgentChat</step>
+        <step>Testar chat com diferentes agentes</step>
+      </steps>
+    </feature>
+  </category>
+
+  <category name="WhatsApp Integration">
+    <feature id="FEAT-012" status="complete" priority="medium" session="1">
+      <description>Integrar WhatsApp com sistema de múltiplos agentes</description>
+      <steps>
+        <step>Modificar webhook para passar contexto do agente</step>
+        <step>Implementar detecção de contexto no WhatsApp</step>
+        <step>Testar mudança de modo durante conversa</step>
+      </steps>
+    </feature>
+  </category>
+
+</features>
