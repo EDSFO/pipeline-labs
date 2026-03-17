@@ -53,7 +53,7 @@ export default function App() {
 
   // Se está na página inicial após login, mostrar dashboard da empresa logada
   if (path === '/home' && loggedInTenant) {
-    return <TenantApp tenant={loggedInTenant} isAdmin={true} onNavigate={navigate} onLogout={handleLogout} />;
+    return <TenantApp tenant={loggedInTenant} onNavigate={navigate} onLogout={handleLogout} />;
   }
 
   const parts = path.split('/').filter(Boolean);
@@ -228,9 +228,8 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
   );
 }
 
-function TenantApp({ slug, isAdmin, onNavigate, onLogout, loggedInTenant }: {
+function TenantApp({ slug, onNavigate, onLogout, loggedInTenant }: {
   slug?: string;
-  isAdmin: boolean;
   onNavigate: (p: string) => void;
   onLogout?: () => void;
   tenant?: any;
