@@ -452,6 +452,89 @@ async function startServer() {
     res.json(templates);
   });
 
+  // ========== GLOBAL AGENTS API ==========
+
+  // Get all global agents
+  app.get("/api/agents/global", async (req, res) => {
+    try {
+      const result = await db.query(
+        'SELECT * FROM agents WHERE is_global = true ORDER BY created_at DESC'
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get global agents" });
+    }
+  });
+
+  // Create global agent
+  app.post("/api/agents/global", async (req, res) => {
+    try {
+      const { name, description, system_prompt, agent_type, personality, parent_agent_id } = req.body;
+      const agent = await createAgent({
+        name,
+        description,
+        system_prompt,
+        agent_type,
+        is_global: true,
+        personality,
+        parent_agent_id
+      });
+      res.json(agent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to create global agent" });
+    }
+  });
+
+  // Get global agent by ID
+  app.get("/api/agents/global/:id", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await getAgent(agentId);
+      if (!agent || !agent.is_global) {
+        return res.status(404).json({ error: "Global agent not found" });
+      }
+      res.json(agent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get global agent" });
+    }
+  });
+
+  // Update global agent
+  app.put("/api/agents/global/:id", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { name, description, system_prompt, personality, is_active } = req.body;
+      const existing = await getAgent(agentId);
+      if (!existing || !existing.is_global) {
+        return res.status(404).json({ error: "Global agent not found" });
+      }
+      const agent = await updateAgent(agentId, { name, description, system_prompt, personality, is_active });
+      res.json(agent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update global agent" });
+    }
+  });
+
+  // Delete global agent
+  app.delete("/api/agents/global/:id", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const existing = await getAgent(agentId);
+      if (!existing || !existing.is_global) {
+        return res.status(404).json({ error: "Global agent not found" });
+      }
+      await deleteAgent(agentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to delete global agent" });
+    }
+  });
+
   // Get all agents for a tenant
   app.get("/api/tenants/:tenantId/agents", async (req, res) => {
     try {
