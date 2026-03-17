@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Tenant, Appointment } from '../types';
 import { Settings, Plus, Trash2, Loader2, X, Search, Edit } from 'lucide-react';
+import AgentChatPanel from './AgentChatPanel';
 
 // Material Symbols Icons Components
 const MaterialIcon = ({ icon, filled = false, className = '' }: { icon: string; filled?: boolean; className?: string }) => (
@@ -43,6 +44,8 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [agentDocuments, setAgentDocuments] = useState<any[]>([]);
   const [isCreatingAgent, setIsCreatingAgent] = useState(false);
+  const [isChatPanelOpen, setIsChatPanelOpen] = useState(false);
+  const [activeAgent, setActiveAgent] = useState<any>(null);
   const [newAgentForm, setNewAgentForm] = useState({
     template_key: 'atendimento',
     custom_name: '',
@@ -500,7 +503,13 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         <p className="text-neutral-500 text-sm leading-relaxed mb-6 h-12 overflow-hidden">
                           {agent.description || 'Agente de atendimento virtual'}
                         </p>
-                        <button className="w-full btn-beam py-3 px-4 text-white text-[10px] font-bold uppercase tracking-widest group/btn shadow-[0_0_20px_-5px_rgba(249,115,22,0.3)]">
+                        <button
+                          onClick={() => {
+                            setActiveAgent(agent);
+                            setIsChatPanelOpen(true);
+                          }}
+                          className="w-full btn-beam py-3 px-4 text-white text-[10px] font-bold uppercase tracking-widest group/btn shadow-[0_0_20px_-5px_rgba(249,115,22,0.3)]"
+                        >
                           <div className="btn-inner"></div>
                           <span className="relative z-10 flex items-center justify-center gap-2">
                             <Bolt />
@@ -901,6 +910,14 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
           )}
         </div>
       </main>
+
+      {/* Agent Chat Panel */}
+      <AgentChatPanel
+        agent={activeAgent}
+        tenant={tenant}
+        isOpen={isChatPanelOpen}
+        onClose={() => setIsChatPanelOpen(false)}
+      />
     </div>
   );
 }
