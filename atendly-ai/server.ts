@@ -57,13 +57,28 @@ import {
   deleteDocument,
   searchDocuments
 } from "./server/agents";
+import {
+  getCatalogAgents,
+  getCatalogAgent,
+  createCatalogAgent,
+  updateCatalogAgent,
+  deleteCatalogAgent,
+  getTenantAgents,
+  getTenantAgent,
+  activateTenantAgent,
+  deactivateTenantAgent,
+  updateTenantAgentPersonality,
+  checkAgentAccess,
+  activateSubscription,
+  getSubscription
+} from "./server/catalog";
 
 let dbStatus = "unknown";
 let dbInitError: any = null;
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   // Initialize Database (Non-blocking)
   console.log("Starting DB Initialization...");
@@ -535,6 +550,155 @@ async function startServer() {
     }
   });
 
+  // ========== CATALOG AGENTS API (GESTOR) ==========
+
+  // Get all catalog agents
+  app.get("/api/catalog/agents", async (req, res) => {
+    try {
+      const agents = await getCatalogAgents();
+      res.json(agents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get catalog agents" });
+    }
+  });
+
+  // Create catalog agent
+  app.post("/api/catalog/agents", async (req, res) => {
+    try {
+      const { name, description, system_prompt, agent_type, personality, monthly_price } = req.body;
+      if (!name || !system_prompt || !agent_type) {
+        return res.status(400).json({ error: "name, system_prompt, and agent_type are required" });
+      }
+      const agent = await createCatalogAgent({ name, description, system_prompt, agent_type, personality, monthly_price });
+      res.json(agent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to create catalog agent" });
+    }
+  });
+
+  // Update catalog agent
+  app.put("/api/catalog/agents/:id", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { name, description, system_prompt, personality, is_active, monthly_price } = req.body;
+      const agent = await updateCatalogAgent(agentId, { name, description, system_prompt, personality, is_active, monthly_price });
+      if (!agent) {
+        return res.status(404).json({ error: "Catalog agent not found" });
+      }
+      res.json(agent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update catalog agent" });
+    }
+  });
+
+  // Delete catalog agent
+  app.delete("/api/catalog/agents/:id", async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      await deleteCatalogAgent(agentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to delete catalog agent" });
+    }
+  });
+
+  // ========== TENANT AGENTS API ==========
+
+  // Get tenant's activated agents
+  app.get("/api/tenants/:tenantId/agents", async (req, res) => {
+    try {
+      const tenantId = parseInt(req.params.tenantId);
+      const agents = await getTenantAgents(tenantId);
+      res.json(agents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get tenant agents" });
+    }
+  });
+
+  // Activate agent from catalog
+  app.post("/api/tenants/:tenantId/agents/activate", async (req, res) => {
+    try {
+      const tenantId = parseInt(req.params.tenantId);
+      const { agent_id } = req.body;
+      if (!agent_id) {
+        return res.status(400).json({ error: "agent_id is required" });
+      }
+
+      // Check payment if active
+      const access = await checkAgentAccess(tenantId, agent_id);
+      if (!access.allowed) {
+        return res.status(402).json({ error: "Payment required", payment_required: true });
+      }
+
+      const tenantAgent = await activateTenantAgent(tenantId, agent_id);
+      res.json(tenantAgent);
+    } catch (error: any) {
+      console.error(error);
+      res.status(400).json({ error: error.message || "Failed to activate agent" });
+    }
+  });
+
+  // Deactivate agent
+  app.delete("/api/tenants/:tenantId/agents/:agentId", async (req, res) => {
+    try {
+      const tenantId = parseInt(req.params.tenantId);
+      const agentId = parseInt(req.params.agentId);
+      await deactivateTenantAgent(tenantId, agentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to deactivate agent" });
+    }
+  });
+
+  // Update tenant agent personality
+  app.put("/api/tenant-agents/:id/personality", async (req, res) => {
+    try {
+      const tenantAgentId = parseInt(req.params.id);
+      const { custom_personality } = req.body;
+      if (!custom_personality) {
+        return res.status(400).json({ error: "custom_personality is required" });
+      }
+      const agent = await updateTenantAgentPersonality(tenantAgentId, custom_personality);
+      if (!agent) {
+        return res.status(404).json({ error: "Tenant agent not found" });
+      }
+      res.json(agent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update personality" });
+    }
+  });
+
+  // Get subscription status
+  app.get("/api/tenant-agents/:id/subscription", async (req, res) => {
+    try {
+      const tenantAgentId = parseInt(req.params.id);
+      const subscription = await getSubscription(tenantAgentId);
+      res.json(subscription);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get subscription" });
+    }
+  });
+
+  // Activate subscription (webhook callback)
+  app.post("/api/tenant-agents/:id/subscription/activate", async (req, res) => {
+    try {
+      const tenantAgentId = parseInt(req.params.id);
+      await activateSubscription(tenantAgentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to activate subscription" });
+    }
+  });
+
   // Get all agents for a tenant
   app.get("/api/tenants/:tenantId/agents", async (req, res) => {
     try {
@@ -753,6 +917,9 @@ async function startServer() {
   // Serve uploaded files
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+  // Serve static files from dist/
+  app.use(express.static(path.join(process.cwd(), 'dist')));
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -761,6 +928,15 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   }
+
+  // SPA fallback - serve index.html for non-API routes
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+    } else {
+      res.status(404).json({ message: `Cannot GET ${req.path}`, error: 'Not Found', statusCode: 404 });
+    }
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
