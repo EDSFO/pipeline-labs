@@ -187,6 +187,52 @@ export async function initDb() {
       console.log("Migration: agents columns may already exist");
     }
 
+    // Migration: Add catalog columns to agents
+    try {
+      await db.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS is_catalog BOOLEAN DEFAULT false`);
+      await db.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS version INTEGER DEFAULT 1`);
+      await db.query(`ALTER TABLE agents ADD COLUMN IF NOT EXISTS monthly_price DECIMAL(10,2) DEFAULT 0`);
+      console.log("Migration: catalog columns added to agents");
+    } catch (err) {
+      console.log("Migration: agents catalog columns may already exist");
+    }
+
+    // tenant_agents - instância de agente do catálogo por tenant
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS tenant_agents (
+          id SERIAL PRIMARY KEY,
+          tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+          agent_id INTEGER NOT NULL REFERENCES agents(id),
+          custom_personality JSONB,
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(tenant_id, agent_id)
+        )
+      `);
+      console.log("tenant_agents table created/verified");
+    } catch (err) {
+      console.log("tenant_agents table may already exist:", err);
+    }
+
+    // tenant_agent_subscriptions - controle de pagamento
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS tenant_agent_subscriptions (
+          id SERIAL PRIMARY KEY,
+          tenant_id INTEGER NOT NULL REFERENCES tenants(id),
+          agent_id INTEGER NOT NULL REFERENCES agents(id),
+          status TEXT DEFAULT 'active',
+          expires_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(tenant_id, agent_id)
+        )
+      `);
+      console.log("tenant_agent_subscriptions table created/verified");
+    } catch (err) {
+      console.log("tenant_agent_subscriptions table may already exist:", err);
+    }
+
     // Agent Documents (RAG)
     console.log("Creating agent_documents table...");
     await db.query(`
