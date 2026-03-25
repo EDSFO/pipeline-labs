@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Tenant } from '../types';
+import { Tenant, RichContent } from '../types';
 
 interface ChatWidgetProps {
   tenant: Tenant;
+  onRichContent?: (content: RichContent, agentName: string) => void;
 }
 
 interface Message {
@@ -87,6 +88,11 @@ export default function ChatWidget({ tenant }: ChatWidgetProps) {
       const data = await res.json();
       const responseText = data.text || data.response || 'Erro ao processar resposta';
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
+
+      // If rich content, call callback
+      if (data.rich_content && onRichContent) {
+        onRichContent(data.rich_content, selectedAgent?.name || 'Agente');
+      }
     } catch (error) {
       setMessages(prev => [...prev, { role: 'model', text: "Desculpe, ocorreu um erro. Tente novamente." }]);
     } finally {
