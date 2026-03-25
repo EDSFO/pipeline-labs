@@ -1,4 +1,5 @@
 import { db } from './db';
+import { getUserAgents } from './users';
 
 // Deep Seek API Configuration
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
@@ -560,4 +561,128 @@ export async function handleMultiAgentChat(
   // Fallback to default chat
   const response = await handleChat(message, tenant_id, history);
   return { response, agent_id_used: null, routed: false };
+}
+
+// Handle Agent Chat with Rich Content Response
+export async function handleAgentChat(
+  message: string,
+  tenant_id: number,
+  user_id: number,
+  agent_id: number,
+  history: any[],
+  options: {
+    return_rich_content?: boolean;
+    preferred_panel?: string;
+  } = {}
+): Promise<{
+  text: string;
+  rich_content?: {
+    type: string;
+    content: any;
+    panel?: string;
+  };
+  panel_to_open?: string;
+  agent_used?: {
+    id: number;
+    name: string;
+    sub_agent_id?: number;
+    sub_agent_name?: string;
+  };
+}> {
+  // Get user's agents to find available orchestrator
+  const userAgents = await getUserAgents(user_id);
+  const orchestrator = userAgents.find((ua: any) => ua.is_orchestrator);
+
+  if (!orchestrator) {
+    // Fallback to regular chat if no orchestrator found
+    const response = await handleChat(message, tenant_id, history, agent_id);
+    return { text: response };
+  }
+
+  // Get RAG context for the tenant
+  const ragContext = await buildRAGContext(orchestrator.agent_id, tenant_id);
+
+  // Build system prompt with RAG context
+  let systemPrompt = orchestrator.system_prompt || '';
+  if (ragContext) {
+    systemPrompt += `\n\n${ragContext}`;
+  }
+
+  // Use handleChat to process the message
+  const response = await handleChat(message, tenant_id, history, orchestrator.agent_id);
+
+  // Determine content type based on agent_type
+  let contentType = 'text';
+  let panel = 'default';
+
+  if (orchestrator.agent_type === 'marketing') {
+    contentType = 'carousel';
+    panel = 'marketing';
+  } else if (orchestrator.agent_type === 'sales') {
+    contentType = 'card';
+    panel = 'sales';
+  } else if (orchestrator.agent_type === 'suporte') {
+    contentType = 'text';
+    panel = 'support';
+  }
+
+  // Build rich content based on response and agent type
+  // NOTE: This is a basic implementation. For production, consider:
+  // 1. Using LLM to structure the response into proper format
+  // 2. JSON parsing if the LLM returns structured JSON
+  // 3. Different prompts per agent type for better formatting
+  const richContent = options.return_rich_content ? {
+    type: contentType,
+    content: buildRichContentFromResponse(response, orchestrator.agent_type),
+    panel
+  } : undefined;
+
+  return {
+    text: response,
+    rich_content: richContent,
+    panel_to_open: richContent?.panel,
+    agent_used: {
+      id: orchestrator.agent_id,
+      name: orchestrator.agent_name,
+      sub_agent_id: orchestrator.id,
+      sub_agent_name: orchestrator.agent_name
+    }
+  };
+}
+
+/**
+ * Build rich content structure from text response.
+ * This is a basic implementation - for production, enhance with LLM-guided formatting.
+ */
+function buildRichContentFromResponse(text: string, agentType: string): any {
+  // Try to parse as JSON if response looks like JSON
+  try {
+    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+      const parsed = JSON.parse(text);
+      return parsed;
+    }
+  } catch (e) {
+    // Not JSON, continue with text processing
+  }
+
+  // Default: wrap text in simple structure based on agent type
+  if (agentType === 'marketing') {
+    // Split by double newlines or numbered items to create carousel
+    const items = text.split(/\n\n|\n(?=\d+\.)/).filter(s => s.trim());
+    return {
+      items: items.slice(0, 5).map((item, idx) => ({
+        title: `Item ${idx + 1}`,
+        caption: item.trim()
+      }))
+    };
+  } else if (agentType === 'sales') {
+    return {
+      title: 'Proposta',
+      description: text,
+      actions: [
+        { label: 'Copiar', type: 'copy', data: text }
+      ]
+    };
+  }
+  return { content: text };
 }

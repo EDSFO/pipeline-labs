@@ -57,6 +57,7 @@ import {
   deleteDocument,
   searchDocuments
 } from "./server/agents";
+import { handleAgentChat } from "./server/ai";
 import {
   getCatalogAgents,
   getCatalogAgentsWithSubAgents,
@@ -1237,6 +1238,27 @@ async function startServer() {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to remove agent" });
+    }
+  });
+
+  // ========== AGENT CHAT API (RICH CONTENT) ==========
+
+  app.post("/api/agent/chat", async (req, res) => {
+    try {
+      const { message, tenant_id, user_id, agent_id, history, return_rich_content } = req.body;
+
+      if (!message || !tenant_id || !user_id) {
+        return res.status(400).json({ error: "message, tenant_id, and user_id are required" });
+      }
+
+      const result = await handleAgentChat(message, tenant_id, user_id, agent_id, history || [], {
+        return_rich_content: return_rich_content !== false
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Chat failed" });
     }
   });
 
