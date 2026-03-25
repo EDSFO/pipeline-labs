@@ -85,6 +85,17 @@ import {
   addTenantSubAgentDocument,
   deleteTenantSubAgentDocument
 } from "./server/catalog";
+import {
+  getUsers,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+  getUserAgents,
+  addUserAgent,
+  removeUserAgent,
+  getAvailableAgentsForUser
+} from "./server/users";
 
 let dbStatus = "unknown";
 let dbInitError: any = null;
@@ -1096,6 +1107,136 @@ async function startServer() {
     } catch (error) {
       console.error("Error uploading file:", error);
       res.status(500).json({ error: "Failed to upload file" });
+    }
+  });
+
+  // ========== USERS API (MANAGER) ==========
+
+  // Get users for tenant
+  app.get("/api/tenants/:tenantId/users", async (req, res) => {
+    try {
+      const tenantId = parseInt(req.params.tenantId);
+      const users = await getUsers(tenantId);
+      res.json(users);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get users" });
+    }
+  });
+
+  // Get single user
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get user" });
+    }
+  });
+
+  // Create user
+  app.post("/api/users", async (req, res) => {
+    try {
+      const { tenant_id, email, password_hash, name, role } = req.body;
+      if (!tenant_id || !email || !password_hash || !name) {
+        return res.status(400).json({ error: "tenant_id, email, password_hash, and name are required" });
+      }
+      const user = await createUser({ tenant_id, email, password_hash, name, role });
+      res.json(user);
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === '23505') { // Unique violation
+        return res.status(400).json({ error: "Email already exists" });
+      }
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
+  // Update user
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { name, email, is_active } = req.body;
+      const user = await updateUser(userId, { name, email, is_active });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  // Delete user
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await deleteUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // ========== USER AGENTS API ==========
+
+  // Get agents available for a user
+  app.get("/api/users/:userId/agents/available", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const agents = await getAvailableAgentsForUser(userId);
+      res.json(agents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get available agents" });
+    }
+  });
+
+  // Get user's assigned agents
+  app.get("/api/users/:userId/agents", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const agents = await getUserAgents(userId);
+      res.json(agents);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to get user agents" });
+    }
+  });
+
+  // Assign agent to user
+  app.post("/api/users/:userId/agents", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { tenant_agent_id } = req.body;
+      if (!tenant_agent_id) {
+        return res.status(400).json({ error: "tenant_agent_id is required" });
+      }
+      const userAgent = await addUserAgent(userId, tenant_agent_id);
+      res.json(userAgent);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to assign agent" });
+    }
+  });
+
+  // Remove agent from user
+  app.delete("/api/users/:userId/agents/:tenantAgentId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const tenantAgentId = parseInt(req.params.tenantAgentId);
+      await removeUserAgent(userId, tenantAgentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to remove agent" });
     }
   });
 
