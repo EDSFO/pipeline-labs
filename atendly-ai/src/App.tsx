@@ -239,6 +239,7 @@ function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
 }
 
 function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [segment, setSegment] = useState('general');
@@ -256,7 +257,7 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
       if (res.ok) {
         onNavigate(`/${slug}/admin`);
       } else {
-        alert('Erro ao criar empresa. Verifique se o slug já existe.');
+        alert(t('error_creating_company'));
       }
     } catch (err) {
       console.error(err);
@@ -277,14 +278,14 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
 
           <div className="bg-[#0A0A0A] border border-white/10 p-8">
             <h2 className="text-white text-2xl font-medium uppercase tracking-tight mb-2">
-              Nova Empresa
+              {t('create_company_title')}
             </h2>
-            <p className="text-neutral-500 text-sm mb-8">Configure sua empresa no Atendly AI</p>
+            <p className="text-neutral-500 text-sm mb-8">{t('create_company_subtitle')}</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
-                  Nome da Empresa
+                  {t('create_company_name')}
                 </label>
                 <input
                   required
@@ -294,35 +295,35 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
                     setName(e.target.value);
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'));
                   }}
-                  placeholder="Nome da sua empresa"
+                  placeholder={t('create_company_name_placeholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
-                  URL (Slug)
+                  {t('create_company_url')}
                 </label>
                 <input
                   required
                   className="w-full p-4 input-dark text-white text-sm bg-[#050505]"
                   value={slug}
                   onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
-                  placeholder="sua-empresa"
+                  placeholder={t('create_company_url_placeholder')}
                 />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">
-                  Segmento
+                  {t('create_company_segment')}
                 </label>
                 <select
                   className="w-full p-4 input-dark text-white text-sm bg-[#0A0A0A]"
                   value={segment}
                   onChange={e => setSegment(e.target.value)}
                 >
-                  <option value="general" className="bg-[#0A0A0A]">Geral</option>
-                  <option value="beauty" className="bg-[#0A0A0A]">Beleza / Estética</option>
-                  <option value="health" className="bg-[#0A0A0A]">Saúde</option>
+                  <option value="general" className="bg-[#0A0A0A]">{t('general')}</option>
+                  <option value="beauty" className="bg-[#0A0A0A]">{t('beauty')}</option>
+                  <option value="health" className="bg-[#0A0A0A]">{t('health')}</option>
                 </select>
               </div>
 
@@ -334,7 +335,7 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
                 <div className="btn-inner"></div>
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Bolt />
-                  {loading ? 'Criando...' : 'Criar Empresa'}
+                  {loading ? t('create_company_creating') : t('create_company_submit')}
                 </span>
               </button>
 
@@ -343,7 +344,7 @@ function CreateCompany({ onNavigate }: { onNavigate: (p: string) => void }) {
                 onClick={() => onNavigate('/')}
                 className="w-full text-center text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-white transition-colors py-2"
               >
-                Cancelar
+                {t('create_company_cancel')}
               </button>
             </form>
           </div>
