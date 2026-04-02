@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { authPlugin } from './modules/auth/index'
+import { userRoutes } from './modules/user/user.routes'
 
 const fastify = Fastify({
   logger: {
@@ -25,6 +26,9 @@ async function start() {
 
     // Register auth plugin (includes JWT setup and routes)
     await fastify.register(authPlugin)
+
+    // Register user routes
+    await fastify.register(userRoutes, { prefix: '/user' })
 
     // Health check endpoint
     fastify.get('/health', async () => {
