@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Tenant, Appointment } from '../types';
 import { Settings, Plus, Trash2, Loader2, X, Search, Edit } from 'lucide-react';
 import AgentChatPanel from './AgentChatPanel';
+import { useTranslation } from '../i18n';
+import LanguageSelector from './LanguageSelector';
 
 // Material Symbols Icons Components
 const MaterialIcon = ({ icon, filled = false, className = '' }: { icon: string; filled?: boolean; className?: string }) => (
@@ -35,6 +37,7 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ tenant: initialTenant, appointments, onLogout }: AdminDashboardProps) {
+  const { t } = useTranslation();
   const [tenant, setTenant] = useState(initialTenant);
   const [activeTab, setActiveTab] = useState<'agents' | 'whatsapp' | 'settings'>('agents');
 
@@ -184,10 +187,10 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
           alert(data.message);
         }
       } else {
-        alert('Erro ao buscar QR Code. Verifique se a Instance Key está correta e salva.');
+        alert(t('error_generic'));
       }
     } catch (e) {
-      alert('Erro de conexão ao buscar QR Code.');
+      alert(t('error_generic'));
     } finally {
       setIsLoadingQr(false);
     }
@@ -205,12 +208,12 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
       if (res.ok) {
         const data = await res.json();
         setAiContext(prev => prev + (prev ? '\n\n' : '') + data.context);
-        alert('Informações extraídas e adicionadas ao contexto!');
+        alert(t('admin_ai_context') + '!');
       } else {
-        alert('Erro ao escanear site.');
+        alert(t('error_generic'));
       }
     } catch (e) {
-      alert('Erro ao conectar com o servidor.');
+      alert(t('error_generic'));
     } finally {
       setIsScanning(false);
     }
@@ -229,18 +232,18 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
       })
     });
     setIsSaving(false);
-    alert('Configurações salvas!');
+    alert(t('admin_save_settings'));
   };
 
   // Navigation tabs
   const mainTabs = [
-    { key: 'home', label: 'Início', icon: Home },
-    { key: 'agents', label: 'Agentes', icon: Robot },
+    { key: 'home', label: t('booking_today'), icon: Home },
+    { key: 'agents', label: t('admin_agents_tab'), icon: Robot },
   ];
 
   const adminTabs = [
-    { key: 'whatsapp', label: 'WhatsApp', icon: Globe },
-    { key: 'settings', label: 'Configurações', icon: SettingsIcon },
+    { key: 'whatsapp', label: t('admin_whatsapp_tab'), icon: Globe },
+    { key: 'settings', label: t('admin_settings_tab'), icon: SettingsIcon },
   ];
 
   return (
@@ -322,10 +325,11 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-1.5 bg-[#F97316]"></div>
             <h2 className="text-white text-xs font-mono uppercase tracking-[0.2em]">
-              Dashboard / {activeTab === 'agents' ? 'Agentes' : activeTab === 'whatsapp' ? 'WhatsApp' : 'Configurações'}
+              Dashboard / {activeTab === 'agents' ? t('admin_agents_tab') : activeTab === 'whatsapp' ? t('admin_whatsapp_tab') : t('admin_settings_tab')}
             </h2>
           </div>
           <div className="flex items-center gap-6">
+            <LanguageSelector />
             <div className="relative group">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-[#F97316] transition-colors text-sm" />
               <input
@@ -351,14 +355,14 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
           <div className="mb-12 relative">
             <div className="beam-border-v h-20 -left-6 top-0"></div>
             <h1 className="text-white text-5xl lg:text-7xl font-medium uppercase tracking-tighter mb-4 leading-none">
-              {activeTab === 'agents' ? 'Agentes' : activeTab === 'whatsapp' ? 'WhatsApp' : 'Configurações'} <span className="text-neutral-700">de IA</span>
+              {activeTab === 'agents' ? t('admin_agents_title') : activeTab === 'whatsapp' ? t('admin_whatsapp_tab') : t('admin_settings_tab')} <span className="text-neutral-700">de IA</span>
             </h1>
             <p className="text-neutral-400 text-lg max-w-2xl leading-relaxed font-light">
               {activeTab === 'agents'
-                ? 'Automatize processos complexos com inteligência artificial generativa de ponta em um ambiente modular.'
+                ? t('admin_agents_subtitle')
                 : activeTab === 'whatsapp'
-                ? 'Conecte o WhatsApp para receber e enviar mensagens automaticamente.'
-                : 'Gerencie as configurações gerais do seu assistente virtual.'}
+                ? t('admin_whatsapp_subtitle')
+                : t('admin_settings_subtitle')}
             </p>
           </div>
 
@@ -367,11 +371,11 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
             <div className="space-y-8">
               {/* Filter Buttons */}
               <div className="flex flex-wrap gap-3 mb-12">
-                <button className="px-6 py-2 bg-[#F97316] text-black text-[10px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(249,115,22,0.2)]">Todos</button>
-                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">Integrações</button>
-                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">Marketing</button>
-                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">Operação</button>
-                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">Vendas</button>
+                <button className="px-6 py-2 bg-[#F97316] text-black text-[10px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(249,115,22,0.2)]">{t('admin_all')}</button>
+                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">{t('admin_integrations')}</button>
+                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">{t('admin_marketing')}</button>
+                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">{t('admin_operation')}</button>
+                <button className="px-6 py-2 border border-white/10 text-neutral-500 hover:border-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all">{t('admin_sales')}</button>
               </div>
 
               {/* Agent Templates Modal */}
@@ -379,7 +383,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
                   <div className="bg-[#0A0A0A] border border-white/10 p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-white text-lg font-medium uppercase tracking-tight">Criar Novo Agente</h3>
+                      <h3 className="text-white text-lg font-medium uppercase tracking-tight">{t('admin_create_agent_title')}</h3>
                       <button onClick={() => setIsCreatingAgent(false)} className="text-neutral-500 hover:text-white transition-colors">
                         <X className="w-5 h-5" />
                       </button>
@@ -388,7 +392,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                     <div className="space-y-6">
                       {/* Template Selection */}
                       <div>
-                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">Template</label>
+                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">{t('admin_template')}</label>
                         <div className="grid grid-cols-2 gap-3">
                           {agentTemplates.map((template: any) => (
                             <button
@@ -409,10 +413,10 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
 
                       {/* Agent Name */}
                       <div>
-                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">Nome do Agente</label>
+                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">{t('admin_agent_name')}</label>
                         <input
                           className="w-full p-4 input-dark text-white text-sm"
-                          placeholder="Ex: Atendente João"
+                          placeholder={t('admin_agent_name_placeholder')}
                           value={newAgentForm.custom_name}
                           onChange={e => setNewAgentForm({ ...newAgentForm, custom_name: e.target.value })}
                         />
@@ -420,10 +424,10 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
 
                       {/* Description */}
                       <div>
-                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">Descrição</label>
+                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">{t('admin_description')}</label>
                         <input
                           className="w-full p-4 input-dark text-white text-sm"
-                          placeholder="Ex: Agente de atendimento para salão de beleza"
+                          placeholder={t('admin_description_placeholder')}
                           value={newAgentForm.custom_description}
                           onChange={e => setNewAgentForm({ ...newAgentForm, custom_description: e.target.value })}
                         />
@@ -431,7 +435,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
 
                       {/* Services */}
                       <div>
-                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">Serviços Oferecidos</label>
+                        <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">{t('admin_services')}</label>
                         <textarea
                           className="w-full p-4 input-dark text-white text-sm h-24 resize-none"
                           placeholder="Ex:&#10;Corte de cabelo - R$ 50 - 30min&#10;Barba - R$ 30 - 20min&#10;Coloração - R$ 120 - 90min"
@@ -461,7 +465,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                               setNewAgentForm({ template_key: 'atendimento', custom_name: '', custom_description: '', custom_prompt: '' });
                             }
                           } catch (e) {
-                            alert('Erro ao criar agente');
+                            alert(t('error_generic'));
                           }
                         }}
                         className="w-full btn-beam py-4 px-6 text-white text-[10px] font-bold uppercase tracking-widest"
@@ -469,7 +473,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         <div className="btn-inner"></div>
                         <span className="relative z-10 flex items-center justify-center gap-2">
                           <Bolt />
-                          Criar Agente
+                          {t('admin_create')}
                         </span>
                       </button>
                     </div>
@@ -481,8 +485,8 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
               {agents.length === 0 ? (
                 <div className="text-center py-20 border border-dashed border-white/10">
                   <Robot className="w-16 h-16 mx-auto mb-4 text-neutral-700" />
-                  <p className="text-neutral-500 text-sm font-mono uppercase tracking-widest">Nenhum agente criado ainda</p>
-                  <p className="text-neutral-600 text-xs mt-2">Crie seu primeiro agente de IA para começar</p>
+                  <p className="text-neutral-500 text-sm font-mono uppercase tracking-widest">{t('admin_no_agents')}</p>
+                  <p className="text-neutral-600 text-xs mt-2">{t('admin_no_agents_subtitle')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -513,7 +517,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                           <div className="btn-inner"></div>
                           <span className="relative z-10 flex items-center justify-center gap-2">
                             <Bolt />
-                            Ativar Agente
+                            {t('admin_activate_agent')}
                           </span>
                         </button>
                       </div>
@@ -529,7 +533,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                     <div className="size-16 bg-[#F97316]/10 flex items-center justify-center text-[#F97316] mb-5 group-hover:scale-110 transition-transform border border-[#F97316]/20">
                       <Add />
                     </div>
-                    <p className="text-white font-bold uppercase tracking-widest text-[11px]">Criar Novo Agente</p>
+                    <p className="text-white font-bold uppercase tracking-widest text-[11px]">{t('admin_create_agent')}</p>
                     <p className="text-neutral-600 text-[10px] font-mono mt-2 uppercase tracking-wider">Modular Assembly</p>
                   </div>
                 </div>
@@ -560,7 +564,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                             : 'border border-green-500/50 text-green-500 hover:bg-green-500/10'
                         }`}
                       >
-                        {selectedAgent.is_active ? 'Desativar' : 'Ativar'}
+                        {selectedAgent.is_active ? t('admin_deactivate') : t('admin_activate')}
                       </button>
                       <button
                         onClick={() => {
@@ -577,7 +581,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         className="px-4 py-2 border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 text-[10px] font-mono uppercase tracking-widest transition-all"
                       >
                         <EditIcon className="w-3 h-3 inline mr-2" />
-                        Configurar
+                        {t('admin_configure')}
                       </button>
                       <button
                         onClick={() => {
@@ -594,11 +598,11 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         }}
                         className="px-4 py-2 border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 text-[10px] font-mono uppercase tracking-widest transition-all"
                       >
-                        Personalidade
+                        {t('admin_edit_personality')}
                       </button>
                       <button
                         onClick={async () => {
-                          if (confirm('Tem certeza que deseja excluir este agente?')) {
+                          if (confirm(t('confirm_delete'))) {
                             await fetch(`/api/agents/${selectedAgent.id}`, { method: 'DELETE' });
                             setAgents(agents.filter((a: any) => a.id !== selectedAgent.id));
                             setSelectedAgent(null);
@@ -607,7 +611,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         className="px-4 py-2 border border-red-500/50 text-red-500 hover:bg-red-500/10 text-[10px] font-mono uppercase tracking-widest transition-all"
                       >
                         <DeleteIcon className="w-3 h-3 inline mr-2" />
-                        Excluir
+                        {t('admin_delete')}
                       </button>
                     </div>
                   </div>
@@ -615,10 +619,10 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                   {/* Agent Config Editor */}
                   {editingAgentConfig && (
                     <div className="bg-[#0A0A0A] border border-white/10 p-6 space-y-4">
-                      <h4 className="text-white text-sm font-mono uppercase tracking-widest mb-4">Configurar Agente</h4>
+                      <h4 className="text-white text-sm font-mono uppercase tracking-widest mb-4">{t('admin_configure')}</h4>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Nome</label>
+                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_agent_name')}</label>
                           <input
                             className="w-full p-3 input-dark text-sm"
                             value={agentConfigForm.name}
@@ -626,7 +630,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Descrição</label>
+                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_description')}</label>
                           <input
                             className="w-full p-3 input-dark text-sm"
                             value={agentConfigForm.description}
@@ -650,14 +654,14 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                           <div className="btn-inner"></div>
                           <span className="relative z-10 flex items-center gap-2">
                             <Bolt />
-                            Salvar Configuração
+                            {t('admin_save_config')}
                           </span>
                         </button>
                         <button
                           onClick={() => setEditingAgentConfig(false)}
                           className="px-6 py-3 border border-white/10 text-neutral-400 hover:text-white text-[10px] font-mono uppercase tracking-widest transition-all"
                         >
-                          Cancelar
+                          {t('admin_cancel')}
                         </button>
                       </div>
                     </div>
@@ -666,44 +670,44 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                   {/* Personality Editor */}
                   {editingPersonality && (
                     <div className="bg-[#0A0A0A] border border-white/10 p-6 space-y-4 mt-4">
-                      <h4 className="text-white text-sm font-mono uppercase tracking-widest mb-4">Configurar Personalidade</h4>
+                      <h4 className="text-white text-sm font-mono uppercase tracking-widest mb-4">{t('admin_personality_config')}</h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Tom de Voz</label>
+                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_tone')}</label>
                           <select
                             className="w-full p-3 input-dark text-sm"
                             value={personalityForm.tone}
                             onChange={e => setPersonalityForm({ ...personalityForm, tone: e.target.value })}
                           >
-                            <option value="professional" className="bg-[#0A0A0A]">Profissional</option>
-                            <option value="friendly" className="bg-[#0A0A0A]">Amigável</option>
-                            <option value="casual" className="bg-[#0A0A0A]">Casual</option>
-                            <option value="formal" className="bg-[#0A0A0A]">Formal</option>
+                            <option value="professional" className="bg-[#0A0A0A]">{t('admin_tone_professional')}</option>
+                            <option value="friendly" className="bg-[#0A0A0A]">{t('admin_tone_friendly')}</option>
+                            <option value="casual" className="bg-[#0A0A0A]">{t('admin_tone_casual')}</option>
+                            <option value="formal" className="bg-[#0A0A0A]">{t('admin_tone_formal')}</option>
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Vocabulário</label>
+                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_vocabulary')}</label>
                           <input
                             className="w-full p-3 input-dark text-sm"
-                            placeholder="palavra1, palavra2"
+                            placeholder={t('admin_vocabulary_placeholder')}
                             value={personalityForm.vocabulary}
                             onChange={e => setPersonalityForm({ ...personalityForm, vocabulary: e.target.value })}
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Saudação</label>
+                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_greeting')}</label>
                           <input
                             className="w-full p-3 input-dark text-sm"
-                            placeholder="Olá! Como posso ajudar?"
+                            placeholder={t('admin_greeting_placeholder')}
                             value={personalityForm.greeting}
                             onChange={e => setPersonalityForm({ ...personalityForm, greeting: e.target.value })}
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Despedida</label>
+                          <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_closing')}</label>
                           <input
                             className="w-full p-3 input-dark text-sm"
-                            placeholder="Obrigado! Até mais!"
+                            placeholder={t('admin_closing_placeholder')}
                             value={personalityForm.closing}
                             onChange={e => setPersonalityForm({ ...personalityForm, closing: e.target.value })}
                           />
@@ -717,14 +721,14 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                           <div className="btn-inner"></div>
                           <span className="relative z-10 flex items-center gap-2">
                             <Bolt />
-                            Salvar Personalidade
+                            {t('admin_save_personality')}
                           </span>
                         </button>
                         <button
                           onClick={() => setEditingPersonality(false)}
                           className="px-6 py-3 border border-white/10 text-neutral-400 hover:text-white text-[10px] font-mono uppercase tracking-widest transition-all"
                         >
-                          Cancelar
+                          {t('admin_cancel')}
                         </button>
                       </div>
                     </div>
@@ -738,22 +742,22 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
           {activeTab === 'whatsapp' && (
             <div className="space-y-6">
               <div className="bg-[#0A0A0A] border border-white/10 p-6">
-                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">Configuração WhatsApp</h3>
+                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">{t('admin_whatsapp_config')}</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Instance Key</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_instance_key')}</label>
                     <input
                       className="w-full p-3 input-dark text-sm"
-                      placeholder="Sua instance key"
+                      placeholder={t('admin_instance_key_placeholder')}
                       value={whatsappConfig.instance_key}
                       onChange={e => setWhatsappConfig({ ...whatsappConfig, instance_key: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Access Token</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_access_token')}</label>
                     <input
                       className="w-full p-3 input-dark text-sm"
-                      placeholder="Seu access token"
+                      placeholder={t('admin_access_token_placeholder')}
                       value={whatsappConfig.access_token}
                       onChange={e => setWhatsappConfig({ ...whatsappConfig, access_token: e.target.value })}
                     />
@@ -772,20 +776,20 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         })
                       });
                       setIsSavingWhatsapp(false);
-                      alert('Configuração salva!');
+                      alert(t('admin_save_config'));
                     }}
                     disabled={isSavingWhatsapp}
                     className="btn-beam px-6 py-3 text-white text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
                   >
                     <div className="btn-inner"></div>
-                    <span className="relative z-10">{isSavingWhatsapp ? 'Salvando...' : 'Salvar Configuração'}</span>
+                    <span className="relative z-10">{isSavingWhatsapp ? t('admin_saving') : t('admin_save_config')}</span>
                   </button>
                 </div>
               </div>
 
               {/* QR Code Section */}
               <div className="bg-[#0A0A0A] border border-white/10 p-6">
-                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">Conectar WhatsApp</h3>
+                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">{t('admin_connect_whatsapp')}</h3>
                 <div className="flex flex-col items-center">
                   <button
                     onClick={fetchQrCode}
@@ -795,7 +799,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                     <div className="btn-inner"></div>
                     <span className="relative z-10 flex items-center gap-2">
                       <Bolt />
-                      {isLoadingQr ? 'Carregando...' : 'Gerar QR Code'}
+                      {isLoadingQr ? t('admin_loading') : t('admin_generate_qr')}
                     </span>
                   </button>
                   {qrCode && (
@@ -805,7 +809,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                   )}
                   {whatsappStatus && (
                     <p className="text-green-500 text-xs font-mono mt-4 uppercase tracking-widest">
-                      Status: {whatsappStatus}
+                      {t('admin_whatsapp_status')}: {whatsappStatus}
                     </p>
                   )}
                 </div>
@@ -817,10 +821,10 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <div className="bg-[#0A0A0A] border border-white/10 p-6">
-                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">Configurações Gerais</h3>
+                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">{t('admin_settings_general')}</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Nome da Empresa</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_company_name')}</label>
                     <input
                       className="w-full p-3 input-dark text-sm"
                       value={tenant.name}
@@ -828,7 +832,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Cor do Tema</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_theme_color')}</label>
                     <div className="flex gap-3">
                       <input
                         type="color"
@@ -844,13 +848,13 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Agente Padrão</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_default_agent')}</label>
                     <select
                       className="w-full p-3 input-dark text-sm"
                       value={defaultAgentId || ''}
                       onChange={e => setDefaultAgentId(e.target.value ? parseInt(e.target.value) : null)}
                     >
-                      <option value="" className="bg-[#0A0A0A]">Selecione um agente...</option>
+                      <option value="" className="bg-[#0A0A0A]">{t('admin_select_agent')}</option>
                       {agents.map(agent => (
                         <option key={agent.id} value={agent.id} className="bg-[#0A0A0A]">
                           {agent.name}
@@ -864,30 +868,30 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                     className="btn-beam px-6 py-3 text-white text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
                   >
                     <div className="btn-inner"></div>
-                    <span className="relative z-10">{isSaving ? 'Salvando...' : 'Salvar Configurações'}</span>
+                    <span className="relative z-10">{isSaving ? t('admin_saving') : t('admin_save_settings')}</span>
                   </button>
                 </div>
               </div>
 
               {/* AI Context */}
               <div className="bg-[#0A0A0A] border border-white/10 p-6">
-                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">Contexto da IA</h3>
+                <h3 className="text-white text-sm font-mono uppercase tracking-widest mb-4">{t('admin_ai_context')}</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Informações sobre a Empresa</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_company_info')}</label>
                     <textarea
                       className="w-full p-3 input-dark text-sm h-40 resize-none"
-                      placeholder="Descreva sua empresa, serviços, políticas, etc."
+                      placeholder={t('admin_company_info_placeholder')}
                       value={aiContext}
                       onChange={e => setAiContext(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">Extrair de Site</label>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-2">{t('admin_extract_from_site')}</label>
                     <div className="flex gap-3">
                       <input
                         className="flex-1 p-3 input-dark text-sm"
-                        placeholder="https://seudominio.com.br"
+                        placeholder={t('admin_extract_placeholder')}
                         value={websiteUrl}
                         onChange={e => setWebsiteUrl(e.target.value)}
                       />
@@ -899,7 +903,7 @@ export default function AdminDashboard({ tenant: initialTenant, appointments, on
                         <div className="btn-inner"></div>
                         <span className="relative z-10 flex items-center gap-2">
                           <Globe className="w-3 h-3" />
-                          {isScanning ? 'Escaneando...' : 'Extrair'}
+                          {isScanning ? t('admin_scanning') : t('admin_extract')}
                         </span>
                       </button>
                     </div>
