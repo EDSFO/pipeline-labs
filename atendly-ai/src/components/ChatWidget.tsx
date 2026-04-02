@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tenant, RichContent } from '../types';
+import { useTranslation } from '../i18n';
 
 interface ChatWidgetProps {
   tenant: Tenant;
@@ -27,9 +28,12 @@ const Bot = () => <MaterialIcon icon="smart_toy" className="w-4 h-4" />;
 const Bolt = () => <MaterialIcon icon="bolt" className="w-3 h-3" />;
 
 export default function ChatWidget({ tenant, onRichContent }: ChatWidgetProps) {
+  const { t, language } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: `Olá! Sou o assistente virtual da ${tenant.name}. Como posso ajudar?` }
+    { role: 'model', text: language === 'en'
+      ? `Hello! I'm the virtual assistant of ${tenant.name}. How can I help?`
+      : `Olá! Sou o assistente virtual da ${tenant.name}. Como posso ajudar?` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -139,7 +143,9 @@ export default function ChatWidget({ tenant, onRichContent }: ChatWidgetProps) {
                             onClick={() => {
                               setSelectedAgentId(agent.id);
                               setShowAgentSelector(false);
-                              setMessages([{ role: 'model', text: `Olá! Agora você está falando com o ${agent.name}. Como posso ajudar?` }]);
+                              setMessages([{ role: 'model', text: language === 'en'
+                          ? `Hello! You're now chatting with ${agent.name}. How can I help?`
+                          : `Olá! Agora você está falando com o ${agent.name}. Como posso ajudar?` }]);
                             }}
                             className={`w-full text-left px-3 py-2 text-xs font-mono uppercase tracking-wider text-neutral-400 hover:bg-white/5 hover:text-white transition-colors ${
                               agent.id === selectedAgentId ? 'text-white' : ''
@@ -195,7 +201,7 @@ export default function ChatWidget({ tenant, onRichContent }: ChatWidgetProps) {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Digite sua mensagem..."
+                  placeholder={t('chat_placeholder')}
                   className="flex-1 px-4 py-2 input-dark text-xs font-mono uppercase tracking-wider"
                 />
                 <button
