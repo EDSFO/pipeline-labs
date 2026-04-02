@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Tenant, Service, Professional } from '../types';
 import { Calendar, Clock, User, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from '../i18n';
 
 interface BookingFlowProps {
   tenant: Tenant;
@@ -11,6 +12,7 @@ interface BookingFlowProps {
 }
 
 export default function BookingFlow({ tenant, services, professionals, onSuccess }: BookingFlowProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
@@ -22,9 +24,9 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
 
   // Mock dates for MVP
   const dates = [
-    { label: 'Hoje', value: '2026-02-23' },
-    { label: 'Amanhã', value: '2026-02-24' },
-    { label: 'Quarta', value: '2026-02-25' },
+    { label: t('booking_today'), value: '2026-02-23' },
+    { label: t('booking_tomorrow'), value: '2026-02-24' },
+    { label: t('booking_wednesday'), value: '2026-02-25' },
   ];
 
   // Mock times for MVP
@@ -56,7 +58,7 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
       }
     } catch (error) {
       console.error(error);
-      alert('Erro ao agendar. Tente novamente.');
+      alert(t('booking_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +72,7 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
       {/* Header */}
       <div className="p-6 text-white" style={{ backgroundColor: tenant.theme_color }}>
         <h2 className="text-xl font-bold">{tenant.name}</h2>
-        <p className="text-white/80 text-sm">Agendamento Online</p>
+        <p className="text-white/80 text-sm">{t('booking_title')}</p>
       </div>
 
       {/* Progress Bar */}
@@ -91,7 +93,7 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Escolha um serviço</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('booking_choose_service')}</h3>
               <div className="space-y-3">
                 {services.map(service => (
                   <button
@@ -122,9 +124,9 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
               className="space-y-4"
             >
               <button onClick={prevStep} className="text-sm text-gray-500 flex items-center mb-2 hover:text-gray-900">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                <ChevronLeft className="w-4 h-4 mr-1" /> {t('booking_back')}
               </button>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Escolha um profissional</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('booking_choose_professional')}</h3>
               <div className="grid grid-cols-1 gap-3">
                 {professionals.map(prof => (
                   <button
@@ -154,9 +156,9 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
               className="space-y-4"
             >
               <button onClick={prevStep} className="text-sm text-gray-500 flex items-center mb-2 hover:text-gray-900">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                <ChevronLeft className="w-4 h-4 mr-1" /> {t('booking_back')}
               </button>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Escolha data e horário</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('booking_choose_datetime')}</h3>
               
               <div className="flex space-x-2 mb-4 overflow-x-auto pb-2">
                 {dates.map(date => (
@@ -202,39 +204,39 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
               className="space-y-4"
             >
               <button onClick={prevStep} className="text-sm text-gray-500 flex items-center mb-2 hover:text-gray-900">
-                <ChevronLeft className="w-4 h-4 mr-1" /> Voltar
+                <ChevronLeft className="w-4 h-4 mr-1" /> {t('booking_back')}
               </button>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Seus dados</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('booking_your_data')}</h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('booking_name_label')}</label>
+                  <input
+                    type="text"
                     value={customerName}
                     onChange={e => setCustomerName(e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none"
-                    placeholder="Ex: Maria Silva"
+                    placeholder={t('booking_name_placeholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
-                  <input 
-                    type="tel" 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('booking_phone_label')}</label>
+                  <input
+                    type="tel"
                     value={customerPhone}
                     onChange={e => setCustomerPhone(e.target.value)}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none"
-                    placeholder="(11) 99999-9999"
+                    placeholder={t('booking_phone_placeholder')}
                   />
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg mt-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Resumo</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">{t('booking_summary')}</h4>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <p><span className="font-medium">Serviço:</span> {selectedService?.name}</p>
-                    <p><span className="font-medium">Profissional:</span> {selectedProfessional?.name}</p>
-                    <p><span className="font-medium">Data:</span> {selectedDate} às {selectedTime}</p>
-                    <p><span className="font-medium">Valor:</span> R$ {selectedService?.price.toFixed(2)}</p>
+                    <p><span className="font-medium">{t('booking_service')}:</span> {selectedService?.name}</p>
+                    <p><span className="font-medium">{t('booking_professional')}:</span> {selectedProfessional?.name}</p>
+                    <p><span className="font-medium">{t('booking_date')}:</span> {selectedDate} {t('booking_time')} {selectedTime}</p>
+                    <p><span className="font-medium">{t('booking_value')}:</span> R$ {selectedService?.price.toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -244,7 +246,7 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
                   className="w-full py-3 rounded-xl font-semibold text-white shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ backgroundColor: tenant.theme_color }}
                 >
-                  {isSubmitting ? 'Agendando...' : 'Confirmar Agendamento'}
+                  {isSubmitting ? t('booking_scheduling') : t('booking_confirm')}
                 </button>
               </div>
             </motion.div>
@@ -260,16 +262,15 @@ export default function BookingFlow({ tenant, services, professionals, onSuccess
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Agendado!</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('booking_success')}</h3>
               <p className="text-gray-600 mb-8">
-                Seu horário foi confirmado com sucesso.<br/>
-                Enviamos um lembrete para seu WhatsApp.
+                {t('booking_success_message')}
               </p>
               <button
                 onClick={() => window.location.reload()}
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 underline"
               >
-                Fazer novo agendamento
+                {t('booking_new_booking')}
               </button>
             </motion.div>
           )}
