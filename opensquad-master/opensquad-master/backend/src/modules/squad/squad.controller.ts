@@ -61,22 +61,9 @@ export async function getMySquadsHandler(
     })
 
     const locale = user?.locale || 'pt-BR'
-    const squads = await getUserSquads(request.user.userId)
+    const squads = await getUserSquads(request.user.userId, locale)
 
-    // For each squad, include localization in user's preferred locale
-    const squadsWithLocale = await Promise.all(
-      squads.map(async (squad) => {
-        const localization = await prisma.squadLocalization.findFirst({
-          where: { squadId: squad.id, locale },
-        })
-        return {
-          ...squad,
-          localization,
-        }
-      })
-    )
-
-    reply.send({ squads: squadsWithLocale })
+    reply.send({ squads })
   } catch (error) {
     reply.status(500).send({ error: 'Internal server error' })
   }

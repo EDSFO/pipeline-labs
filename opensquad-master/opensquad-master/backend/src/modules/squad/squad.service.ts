@@ -53,7 +53,7 @@ export async function getSquadBySlug(
   locale: string = 'pt-BR'
 ): Promise<SquadDetailData | null> {
   const squad = await prisma.squad.findUnique({
-    where: { slug },
+    where: { slug, isPublished: true },
     include: {
       localizations: {
         select: {
@@ -80,7 +80,7 @@ export async function getSquadBySlug(
   }
 }
 
-export async function getUserSquads(userId: string): Promise<SquadData[]> {
+export async function getUserSquads(userId: string, locale: string = 'pt-BR'): Promise<SquadData[]> {
   const userSquads = await prisma.userSquad.findMany({
     where: {
       userId,
@@ -93,7 +93,7 @@ export async function getUserSquads(userId: string): Promise<SquadData[]> {
           slug: true,
           isPublished: true,
           localizations: {
-            where: { locale: 'pt-BR' }, // Default locale for user squads
+            where: { locale },
             select: {
               id: true,
               locale: true,
@@ -122,50 +122,62 @@ export async function purchaseSquad(
   squadId: string,
   stripePaymentId?: string
 ): Promise<{ success: boolean; error?: string; userSquad?: object }> {
-  // Check if squad exists
-  const squad = await prisma.squad.findUnique({
-    where: { id: squadId },
-  })
+  return await prisma.$transaction(async (tx) => {
+    // Check if squad exists
+    const squad = await tx.squad.findUnique({
+      where: { id: squadId },
+    })
 
-  if (!squad) {
-    return { success: false, error: 'Squad not found' }
-  }
-
-  // Check if user already owns this squad
-  const existingUserSquad = await prisma.userSquad.findUnique({
-    where: {
-      userId_squadId: {
-        userId,
-        squadId,
-      },
-    },
-  })
-
-  if (existingUserSquad) {
-    if (existingUserSquad.isActive) {
-      return { success: false, error: 'User already owns this squad' }
+    if (!squad) {
+      return { success: false, error: 'Squad not found' }
     }
-    // Reactivate the squad
-    const reactivated = await prisma.userSquad.update({
-      where: { id: existingUserSquad.id },
-      data: {
-        isActive: true,
-        stripePaymentId,
-        purchasedAt: new Date(),
+
+    // Check if user already owns this squad
+    const existingUserSquad = await tx.userSquad.findUnique({
+      where: {
+        userId_squadId: {
+          userId,
+          squadId,
+        },
       },
     })
-    return { success: true, userSquad: reactivated }
-  }
 
-  // Create new UserSquad record
-  const userSquad = await prisma.userSquad.create({
-    data: {
-      userId,
-      squadId,
-      stripePaymentId,
-      isActive: true,
-    },
+    if (existingUserSquad) {
+      if (existingUserSquad.isActive) {
+        return { success: false, error: 'User already owns this squad' }
+      }
+      // Reactivate the squad
+      const reactivated = await tx.userSquad.update({
+        where: { id: existingUserSquad.id },
+        data: {
+          isActive: true,
+          stripePaymentId,
+          purchasedAt: new Date(),
+        },
+      })
+      return { success: true, userSquad: reactivated }
+    }
+
+    // Check squad limit enforcement
+    const user = await tx.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      return { success: false, error: 'User not found' }
+    }
+    const activeSquadCount = await tx.userSquad.count({ where: { userId, isActive: true } })
+    if (activeSquadCount >= user.squadLimit) {
+      return { success: false, error: 'Squad limit reached. Upgrade your plan to add more squads.' }
+    }
+
+    // Create new UserSquad record
+    const userSquad = await tx.userSquad.create({
+      data: {
+        userId,
+        squadId,
+        stripePaymentId,
+        isActive: true,
+      },
+    })
+
+    return { success: true, userSquad }
   })
-
-  return { success: true, userSquad }
 }
