@@ -2,6 +2,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { authPlugin } from './modules/auth/index'
 import { userRoutes } from './modules/user/user.routes'
+import { squadRoutes } from './modules/squad/squad.routes'
 
 const fastify = Fastify({
   logger: {
@@ -29,6 +30,9 @@ async function start() {
 
     // Register user routes
     await fastify.register(userRoutes, { prefix: '/user' })
+
+    // Register squad routes
+    await fastify.register(squadRoutes)
 
     // Health check endpoint
     fastify.get('/health', async () => {
