@@ -82,6 +82,11 @@ export async function changePassword(
     },
   })
 
+  // Always run bcrypt.compare to prevent timing-based user enumeration
+  const dummyHash = '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4jITqZCDj8Z.lPzu'
+  const hashToCompare = user?.passwordHash ?? dummyHash
+  await bcrypt.compare(oldPassword, hashToCompare)
+
   if (!user) {
     return { success: false, error: 'User not found' }
   }
