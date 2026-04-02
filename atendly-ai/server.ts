@@ -1253,14 +1253,15 @@ async function startServer() {
 
   app.post("/api/agent/chat", async (req, res) => {
     try {
-      const { message, tenant_id, user_id, agent_id, history, return_rich_content } = req.body;
+      const { message, tenant_id, user_id, agent_id, history, return_rich_content, language } = req.body;
 
       if (!message || !tenant_id || !user_id) {
         return res.status(400).json({ error: "message, tenant_id, and user_id are required" });
       }
 
       const result = await handleAgentChat(message, tenant_id, user_id, agent_id, history || [], {
-        return_rich_content: return_rich_content !== false
+        return_rich_content: return_rich_content !== false,
+        language: language || 'pt-BR',
       });
 
       res.json(result);

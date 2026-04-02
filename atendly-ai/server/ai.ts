@@ -312,10 +312,15 @@ ${cleanText}`
   }
 }
 
-export async function handleChat(message: string, tenant_id: number, history: any[], agent_id?: number, systemPromptOverride?: string) {
+export async function handleChat(message: string, tenant_id: number, history: any[], agent_id?: number, systemPromptOverride?: string, language?: string) {
   // Get Tenant Info for Context
   const tenantRes = await db.query('SELECT name, segment, ai_context FROM tenants WHERE id = $1', [tenant_id]);
   const tenant = tenantRes.rows[0];
+
+  // Language instruction for AI responses
+  const languageInstruction = language && language !== 'pt-BR'
+    ? '\n\nIMPORTANT: Respond in the user language (English if user writes in English).'
+    : '\n\nIMPORTANTE: Responda sempre em português brasileiro.';
 
   let systemInstruction = systemPromptOverride || '';  // Use override if provided
   if (systemPromptOverride) {
@@ -612,6 +617,7 @@ export async function handleAgentChat(
   options: {
     return_rich_content?: boolean;
     preferred_panel?: string;
+    language?: string;
   } = {}
 ): Promise<{
   text: string;
@@ -628,13 +634,16 @@ export async function handleAgentChat(
     sub_agent_name?: string;
   };
 }> {
+  // Destructure options
+  const { return_rich_content, preferred_panel, language = 'pt-BR' } = options;
+
   // Get user's agents to find available orchestrator
   const userAgents = await getUserAgents(user_id);
   const orchestrator = userAgents.find((ua: any) => ua.is_orchestrator);
 
   if (!orchestrator) {
     // Fallback to regular chat if no orchestrator found
-    const response = await handleChat(message, tenant_id, history, agent_id);
+    const response = await handleChat(message, tenant_id, history, agent_id, undefined, language);
     return { text: response };
   }
 
@@ -654,7 +663,7 @@ export async function handleAgentChat(
     richContent = orchestrationResult.rich_content;
   } else {
     // For regular chat, use handleChat directly
-    response = await handleChat(message, tenant_id, history, orchestrator.agent_id);
+    response = await handleChat(message, tenant_id, history, orchestrator.agent_id, undefined, language);
 
     // Determine content type based on agent_type
     let contentType = 'text';
