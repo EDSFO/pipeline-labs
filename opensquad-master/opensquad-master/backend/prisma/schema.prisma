@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  name             String?
+  locale           String   @default("pt-BR")
+  stripeCustomerId String?  @unique
+  subscriptionId   String?
+  plan             Plan     @default(STARTER)
+  squadLimit       Int      @default(1)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userSquads       UserSquad[]
+  aiUsageLogs      AIUsageLog[]
+  rateLimitBuckets RateLimitBucket[]
+  sessions         Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Plan {
+  STARTER   // 1 squad
+  GROWTH    // 3 squads
+  SCALE     // 5 squads
+  ENTERPRISE // ilimitado
+}
+
+model Squad {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  localizations SquadLocalization[]
+  userSquads    UserSquad[]
+}
+
+model SquadLocalization {
+  id          String  @id @default(cuid())
+  squadId     String
+  locale      String  // pt-BR | en-US
+  name        String
+  description String  @db.Text
+  price       Int     // centavos
+
+  squad Squad @relation(fields: [squadId], references: [id], onDelete: Cascade)
+
+  @@unique([squadId, locale])
+}
+
+model UserSquad {
+  id              String   @id @default(cuid())
+  userId          String
+  squadId         String
+  stripePaymentId String?
+  purchasedAt     DateTime @default(now())
+  isActive        Boolean  @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  squad Squad @relation(fields: [squadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, squadId])
+}
+
+model AIUsageLog {
+  id          String   @id @default(cuid())
+  userId      String
+  squadExecId String?
+  tokensUsed  Int
+  model       String
+  costCents   Int
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RateLimitBucket {
+  id         String   @id @default(cuid())
+  userId     String
+  window     String   // "minute" | "hour" | "month"
+  tokensUsed Int      @default(0)
+  limit      Int
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, window])
+}
