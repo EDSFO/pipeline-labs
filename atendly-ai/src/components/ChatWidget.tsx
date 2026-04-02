@@ -89,12 +89,13 @@ export default function ChatWidget({ tenant, onRichContent }: ChatWidgetProps) {
           message: userMsg,
           tenant_id: tenant.id,
           agent_id: agentIdToUse,
-          history: messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', text: m.text }))
+          history: messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', text: m.text })),
+          language,
         }),
       });
 
       const data = await res.json();
-      const responseText = data.text || data.response || 'Erro ao processar resposta';
+      const responseText = data.text || data.response || t('error_generic');
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
 
       // If rich content, call callback
@@ -102,7 +103,7 @@ export default function ChatWidget({ tenant, onRichContent }: ChatWidgetProps) {
         onRichContent(data.rich_content, selectedAgent?.name || 'Agente');
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "Desculpe, ocorreu um erro. Tente novamente." }]);
+      setMessages(prev => [...prev, { role: 'model', text: t('error_generic') }]);
     } finally {
       setIsLoading(false);
     }
