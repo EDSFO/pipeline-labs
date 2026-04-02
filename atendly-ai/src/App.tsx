@@ -10,8 +10,10 @@ import ChatWidget from './components/ChatWidget';
 import SystemCatalogManager from './components/CatalogManager';
 import AgentWorkspace from './components/AgentWorkspace';
 import CentralPanel from './components/CentralPanel';
+import LanguageSelector from './components/LanguageSelector';
 import { RichContent } from './types';
 import { Loader2, Plus, X, Edit, Trash2, Check, FileText, Trash } from 'lucide-react';
+import { I18nProvider, useTranslation } from './i18n';
 
 // Material Symbols Icons
 const MaterialIcon = ({ icon, filled = false, className = '' }: { icon: string; filled?: boolean; className?: string }) => (
@@ -59,16 +61,16 @@ export default function App() {
   };
 
   if (path === '/') {
-    return <LoginPage onLogin={handleLogin} />;
+    return <I18nProvider><LoginPage onLogin={handleLogin} /></I18nProvider>;
   }
 
   if (path === '/new-company') {
-    return <CreateCompany onNavigate={navigate} />;
+    return <I18nProvider><CreateCompany onNavigate={navigate} /></I18nProvider>;
   }
 
   // System Admin Catalog route - must check before slug parsing
   if (path === '/admin/catalog') {
-    return <SystemCatalogManager onNavigate={navigate} />;
+    return <I18nProvider><SystemCatalogManager onNavigate={navigate} /></I18nProvider>;
   }
 
   // Parse path parts for routing
@@ -78,11 +80,11 @@ export default function App() {
   // Workspace route for agent users
   if (path.startsWith('/workspace/')) {
     const workspaceSlug = parts[1];
-    return <AgentWorkspacePage slug={workspaceSlug} onLogout={handleLogout} />;
+    return <I18nProvider><AgentWorkspacePage slug={workspaceSlug} onLogout={handleLogout} /></I18nProvider>;
   }
 
   if (path === '/home' && loggedInTenant) {
-    return <TenantApp tenant={loggedInTenant} onNavigate={navigate} onLogout={handleLogout} />;
+    return <I18nProvider><TenantApp tenant={loggedInTenant} onNavigate={navigate} onLogout={handleLogout} /></I18nProvider>;
   }
 
   // Handle /admin routes for tenant
@@ -94,7 +96,7 @@ export default function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  return <TenantApp slug={slug} onNavigate={navigate} onLogout={handleLogout} />;
+  return <I18nProvider><TenantApp slug={slug} onNavigate={navigate} onLogout={handleLogout} /></I18nProvider>;
 }
 
 // Workspace route for agent users
@@ -357,6 +359,7 @@ function TenantApp({ slug, onNavigate, onLogout, loggedInTenant }: {
   tenant?: any;
   loggedInTenant?: any;
 }) {
+  const { t } = useTranslation();
   const directTenant = loggedInTenant;
   const { tenant: fetchedTenant, loading } = useTenant(slug || directTenant?.slug);
   const tenant = directTenant || fetchedTenant;
@@ -615,9 +618,9 @@ function TenantApp({ slug, onNavigate, onLogout, loggedInTenant }: {
   if (!tenant) {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center">
-        <h2 className="text-white text-xl font-medium uppercase tracking-tight mb-4">Empresa não encontrada</h2>
+        <h2 className="text-white text-xl font-medium uppercase tracking-tight mb-4">{t('company_not_found')}</h2>
         <button onClick={() => onNavigate('/')} className="text-[#F97316] hover:underline text-sm font-mono uppercase tracking-widest">
-          Voltar ao início
+          {t('back_to_start')}
         </button>
       </div>
     );
@@ -647,14 +650,14 @@ function TenantApp({ slug, onNavigate, onLogout, loggedInTenant }: {
               onClick={() => onNavigate(`/${tenantSlug}/admin`)}
               className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-white px-4 py-2 border border-white/10 hover:border-[#F97316]/50 transition-all"
             >
-              Configurar Agentes
+              {t('header_configure_agents')}
             </button>
             {onLogout && (
               <button
                 onClick={onLogout}
                 className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 hover:text-red-500 px-4 py-2 border border-white/10 hover:border-red-500/50 transition-all"
               >
-                Sair
+                {t('header_logout')}
               </button>
             )}
           </div>
