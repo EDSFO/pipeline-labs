@@ -136,6 +136,7 @@ function AgentWorkspacePage({ slug, onLogout }: { slug: string; onLogout: () => 
 }
 
 function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
+  const { t } = useTranslation();
   const [tenants, setTenants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTenant, setSelectedTenant] = useState<any>(null);
@@ -179,7 +180,7 @@ function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
 
             <div className="bg-[#0A0A0A] border border-white/10 p-8">
               <h2 className="text-white text-xs font-mono uppercase tracking-[0.2em] mb-6">
-                Selecione sua empresa
+                {t('login_select_company')}
               </h2>
 
               {loading ? (
@@ -198,7 +199,7 @@ function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
                       }}
                       className="w-full p-4 input-dark text-sm bg-[#0A0A0A]"
                     >
-                      <option value="" className="bg-[#0A0A0A]">Selecione uma empresa...</option>
+                      <option value="" className="bg-[#0A0A0A]">{t('login_select_company')}</option>
                       {tenants.map(tenant => (
                         <option key={tenant.id} value={tenant.id} className="bg-[#0A0A0A]">
                           {tenant.name}
@@ -215,7 +216,7 @@ function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
                     <div className="btn-inner"></div>
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       <Bolt />
-                      Entrar
+                      {t('login_enter')}
                     </span>
                   </button>
 
@@ -224,7 +225,7 @@ function LoginPage({ onLogin }: { onLogin: (tenant: any) => void }) {
                       onClick={() => window.location.href = '/new-company'}
                       className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-[#F97316] transition-colors"
                     >
-                      + Criar nova empresa
+                      {t('login_create_company')}
                     </button>
                   </div>
                 </div>
