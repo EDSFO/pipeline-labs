@@ -28,10 +28,13 @@ const EXECUTION_PREFIX = 'squad-execution:'
 const CHECKPOINT_WAIT_PREFIX = 'checkpoint-wait:'
 
 // Store execution state in Redis
-async function setExecutionState(jobId: string, state: Partial<ExecutionStatus>): Promise<void> {
+async function setExecutionState(jobId: string, state: Partial<ExecutionStatus>, userId?: string): Promise<void> {
   const stateObj: Record<string, string> = {
     ...state,
     updatedAt: new Date().toISOString(),
+  }
+  if (userId) {
+    stateObj.userId = userId
   }
   // Convert nested objects to JSON strings
   if (state.checkpoint) {
@@ -102,7 +105,7 @@ export async function enqueueSquadExecution(
     totalSteps: 5, // Placeholder, will be determined by squad pipeline
     output: {},
     startedAt: new Date().toISOString(),
-  })
+  }, userId)
 
   return jobId
 }
@@ -146,6 +149,11 @@ export async function approveCheckpoint(jobId: string, userId: string): Promise<
     return null
   }
 
+  // Verify user owns the execution
+  if (state.userId !== userId) {
+    return null
+  }
+
   // Set approval signal
   await redis.set(`${CHECKPOINT_WAIT_PREFIX}${jobId}:approved`, '1')
 
@@ -160,6 +168,11 @@ export async function rejectCheckpoint(jobId: string, userId: string): Promise<E
   const state = await getExecutionState(jobId)
 
   if (!state || state.status !== 'waiting_checkpoint') {
+    return null
+  }
+
+  // Verify user owns the execution
+  if (state.userId !== userId) {
     return null
   }
 
@@ -255,17 +268,25 @@ export function createExecutorWorker(): Worker {
     }
   )
 
-  worker.on('completed', (job) => {
+  worker.on('completed', async (job) => {
     console.log(`Job ${job.id} completed successfully`)
+    const jobId = job.id as string
+    const waitKey = `${CHECKPOINT_WAIT_PREFIX}${jobId}`
+    await redis.del(`${EXECUTION_PREFIX}${jobId}`)
+    await redis.del(waitKey)
   })
 
-  worker.on('failed', (job, err) => {
+  worker.on('failed', async (job, err) => {
     console.error(`Job ${job?.id} failed:`, err)
     if (job?.id) {
-      setExecutionState(job.id, {
+      const jobId = job.id as string
+      const waitKey = `${CHECKPOINT_WAIT_PREFIX}${jobId}`
+      await setExecutionState(jobId, {
         status: 'failed',
         completedAt: new Date().toISOString(),
-      }).catch(console.error)
+      })
+      await redis.del(`${EXECUTION_PREFIX}${jobId}`)
+      await redis.del(waitKey)
     }
   })
 
