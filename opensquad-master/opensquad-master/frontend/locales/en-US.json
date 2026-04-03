@@ -141,6 +141,30 @@
     "empty": "You don't have any squads yet",
     "emptySubtitle": "Visit the marketplace to purchase your first squad"
   },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your personal information and preferences",
+    "profile": {
+      "title": "Profile",
+      "name": "Name",
+      "email": "Email",
+      "saved": "Profile updated successfully!"
+    },
+    "locale": {
+      "label": "Language",
+      "ptBR": "Português (Brasil)",
+      "enUS": "English (US)"
+    },
+    "password": {
+      "title": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "change": "Change Password",
+      "saved": "Password changed successfully!"
+    },
+    "save": "Save"
+  },
   "footer": {
     "description": "AI agent squads to create content at scale",
     "rights": "All rights reserved",
