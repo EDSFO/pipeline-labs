@@ -1,18 +1,22 @@
+# =============================================================================
+# Opensquad SaaS - Production Docker Compose
+# =============================================================================
+# Production-specific configuration for Hetzner deployment
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+# =============================================================================
+
 version: "3.9"
 
 services:
   postgres:
-    image: postgres:16-alpine
-    container_name: opensquad-postgres
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_USER: opensquad
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opensquad_secret}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: opensquad
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - ./backups:/backups
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U opensquad"]
       interval: 10s
@@ -21,20 +25,16 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "50m"
+        max-file: "10"
     networks:
       - opensquad-network
 
   redis:
-    image: redis:7-alpine
-    container_name: opensquad-redis
-    restart: unless-stopped
-    command: redis-server --save 60 1 --loglevel warning --appendonly yes
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -43,8 +43,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "50m"
+        max-file: "10"
     networks:
       - opensquad-network
 
@@ -52,16 +52,23 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: builder
-    container_name: opensquad-backend
-    restart: unless-stopped
+      target: runner
+    restart: always
     environment:
-      DATABASE_URL: postgresql://opensquad:${POSTGRES_PASSWORD:-opensquad_secret}@postgres:5432/opensquad
+      DATABASE_URL: postgresql://opensquad:${POSTGRES_PASSWORD}@postgres:5432/opensquad
       REDIS_URL: redis://redis:6379
       PORT: 3001
-      NODE_ENV: development
-    ports:
-      - "3001:3001"
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      BACKEND_URL: ${BACKEND_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,8 +82,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: "50m"
+        max-file: "10"
     networks:
       - opensquad-network
 
@@ -84,15 +91,16 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: builder
-    container_name: opensquad-frontend
-    restart: unless-stopped
+      target: runner
+    restart: always
     environment:
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      NEXT_PUBLIC_BACKEND_URL: http://backend:3001
-      NODE_ENV: development
-    ports:
-      - "3000:3000"
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_BACKEND_URL: ${BACKEND_URL}
+      NODE_ENV: production
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      NEXT_PUBLIC_STRIPE_PRICE_ID_STARTER: ${STRIPE_PRICE_ID_STARTER}
+      NEXT_PUBLIC_STRIPE_PRICE_ID_GROWTH: ${STRIPE_PRICE_ID_GROWTH}
+      NEXT_PUBLIC_STRIPE_PRICE_ID_SCALE: ${STRIPE_PRICE_ID_SCALE}
     depends_on:
       - backend
     healthcheck:
@@ -103,18 +111,18 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: "50m"
+        max-file: "10"
     networks:
       - opensquad-network
 
   nginx:
     image: nginx:1.27-alpine
-    container_name: opensquad-nginx
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
     ports:
       - "80:80"
       - "443:443"
@@ -129,8 +137,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: "100m"
+        max-file: "20"
     networks:
       - opensquad-network
 
