@@ -207,5 +207,33 @@
       "hasAccount": "Já tem uma conta?",
       "link": "Entrar"
     }
+  },
+  "executor": {
+    "title": "Executar Squad",
+    "subtitle": "Configure e execute seu squad",
+    "selectSquad": "Selecionar Squad",
+    "inputs": {
+      "title": "Variáveis de Entrada",
+      "description": "Configure as entradas para execução do seu squad"
+    },
+    "start": "Iniciar Execução",
+    "starting": "Iniciando...",
+    "status": {
+      "pending": "Pendente",
+      "active": "Ativo",
+      "waiting_checkpoint": "Aguardando Aprovação",
+      "completed": "Concluído",
+      "failed": "Falhou"
+    },
+    "step": "Passo",
+    "of": "de",
+    "checkpoint": {
+      "title": "Aprovação de Checkpoint Necessária",
+      "description": "O squad foi pausado em um checkpoint e precisa da sua aprovação para continuar",
+      "approve": "Aprovar",
+      "reject": "Rejeitar"
+    },
+    "output": "Saída",
+    "noOutput": "Nenhuma saída ainda"
   }
 }

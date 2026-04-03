@@ -207,5 +207,33 @@
       "hasAccount": "Already have an account?",
       "link": "Sign in"
     }
+  },
+  "executor": {
+    "title": "Execute Squad",
+    "subtitle": "Configure and run your squad",
+    "selectSquad": "Select Squad",
+    "inputs": {
+      "title": "Input Variables",
+      "description": "Configure the inputs for your squad execution"
+    },
+    "start": "Start Execution",
+    "starting": "Starting...",
+    "status": {
+      "pending": "Pending",
+      "active": "Active",
+      "waiting_checkpoint": "Waiting for Approval",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "step": "Step",
+    "of": "of",
+    "checkpoint": {
+      "title": "Checkpoint Approval Required",
+      "description": "The squad has paused at a checkpoint and needs your approval to continue",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "output": "Output",
+    "noOutput": "No output yet"
   }
 }

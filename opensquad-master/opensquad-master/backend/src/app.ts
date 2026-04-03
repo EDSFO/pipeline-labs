@@ -5,6 +5,8 @@ import { userRoutes } from './modules/user/user.routes'
 import { squadRoutes } from './modules/squad/squad.routes'
 import { billingRoutes } from './modules/billing/billing.routes'
 import { aiGatewayRoutes } from './modules/ai-gateway/ai-gateway.routes'
+import { executorRoutes } from './modules/executor/executor.routes'
+import { createExecutorWorker } from './modules/executor/executor.service'
 
 const fastify = Fastify({
   logger: {
@@ -51,6 +53,13 @@ async function start() {
 
     // Register AI Gateway routes
     await fastify.register(aiGatewayRoutes)
+
+    // Register executor routes
+    await fastify.register(executorRoutes, { prefix: '/executor' })
+
+    // Start the executor worker
+    const executorWorker = createExecutorWorker()
+    console.log('Executor worker started')
 
     // Health check endpoint
     fastify.get('/health', async () => {
