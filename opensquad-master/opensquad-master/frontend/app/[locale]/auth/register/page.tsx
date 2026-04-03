@@ -43,16 +43,13 @@ export default function RegisterPage() {
     setError(null)
 
     try {
+      const { confirmPassword: _, ...payload } = data
       const response = await fetch(`${BACKEND_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify(payload),
       })
 
       const result = await response.json()

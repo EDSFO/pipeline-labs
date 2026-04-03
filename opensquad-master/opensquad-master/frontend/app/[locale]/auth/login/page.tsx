@@ -73,13 +73,13 @@ export default function LoginPage() {
             <FormField
               name="email"
               label={t('email')}
-              error={errors.email?.message || error || undefined}
+              error={errors.email?.message}
             >
               <Input
                 type="email"
                 placeholder="email@example.com"
                 {...register('email')}
-                error={!!errors.email || !!error}
+                error={!!errors.email}
               />
             </FormField>
 
@@ -95,6 +95,12 @@ export default function LoginPage() {
                 error={!!errors.password}
               />
             </FormField>
+
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                {error}
+              </div>
+            )}
 
             <Button
               type="submit"
