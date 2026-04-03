@@ -118,6 +118,18 @@
     "welcome": "Bem-vindo ao seu dashboard",
     "subtitle": "Gerencie seus squads e conteúdos em um só lugar"
   },
+  "marketplace": {
+    "title": "Marketplace de Squads",
+    "subtitle": "Escolha entre nossos squads especializados",
+    "buy": "Comprar",
+    "filter": {
+      "all": "Todos",
+      "content": "Conteúdo",
+      "marketing": "Marketing",
+      "social": "Redes Sociais"
+    },
+    "empty": "Nenhum squad disponível"
+  },
   "footer": {
     "description": "Squads de agentes de IA para criar conteúdo em escala",
     "rights": "Todos os direitos reservados",

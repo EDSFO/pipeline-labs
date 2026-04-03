@@ -118,6 +118,18 @@
     "welcome": "Welcome to your dashboard",
     "subtitle": "Manage your squads and content from one place"
   },
+  "marketplace": {
+    "title": "Squad Marketplace",
+    "subtitle": "Choose from our specialized squads",
+    "buy": "Buy",
+    "filter": {
+      "all": "All",
+      "content": "Content",
+      "marketing": "Marketing",
+      "social": "Social Media"
+    },
+    "empty": "No squads available"
+  },
   "footer": {
     "description": "AI agent squads to create content at scale",
     "rights": "All rights reserved",
