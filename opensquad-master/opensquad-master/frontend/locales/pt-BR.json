@@ -1,0 +1,13 @@
+{
+  "common": {
+    "appName": "Opensquad",
+    "welcome": "Bem-vindo ao Opensquad"
+  },
+  "nav": {
+    "home": "Início",
+    "features": "Funcionalidades",
+    "pricing": "Preços",
+    "login": "Entrar",
+    "register": "Cadastrar"
+  }
+}
