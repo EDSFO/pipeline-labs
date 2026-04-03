@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { prisma } from '../../lib/prisma'
 import { FastifyInstance } from 'fastify'
 import { JwtPayload } from '../../plugins/auth-plugin'
+import { sendWelcomeEmailNonBlocking } from '../notifications/email.service'
 
 const BCRYPT_ROUNDS = 12
 const JWT_EXPIRATION = '7d'
@@ -69,6 +70,14 @@ export async function registerUser(
   const token = await generateJwt(fastify, {
     userId: user.id,
     email: user.email,
+  })
+
+  // Send welcome email (non-blocking - don't await)
+  sendWelcomeEmailNonBlocking({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    locale: user.locale,
   })
 
   return {

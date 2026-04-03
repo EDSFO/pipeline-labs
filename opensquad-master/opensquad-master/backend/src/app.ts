@@ -6,6 +6,7 @@ import { squadRoutes } from './modules/squad/squad.routes'
 import { billingRoutes } from './modules/billing/billing.routes'
 import { aiGatewayRoutes } from './modules/ai-gateway/ai-gateway.routes'
 import { executorRoutes } from './modules/executor/executor.routes'
+import { emailRoutes } from './modules/notifications/email.routes'
 import { createExecutorWorker } from './modules/executor/executor.service'
 
 const fastify = Fastify({
@@ -56,6 +57,9 @@ async function start() {
 
     // Register executor routes
     await fastify.register(executorRoutes, { prefix: '/executor' })
+
+    // Register email notification routes
+    await fastify.register(emailRoutes)
 
     // Start the executor worker
     const executorWorker = createExecutorWorker()

@@ -1,6 +1,8 @@
 import { Worker, Job } from 'bullmq'
 import { executorQueue } from '../../lib/queue.js'
 import { redis } from '../../lib/redis.js'
+import { prisma } from '../../lib/prisma.js'
+import { sendExecutionCompleteEmailNonBlocking } from '../notifications/email.service.js'
 
 interface ExecutionJobData {
   userId: string
@@ -271,6 +273,37 @@ export function createExecutorWorker(): Worker {
   worker.on('completed', async (job) => {
     console.log(`Job ${job.id} completed successfully`)
     const jobId = job.id as string
+    const { userId, squadId } = job.data
+
+    // Fetch user and squad for email notification
+    const [user, squad] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId } }),
+      prisma.squad.findUnique({ where: { id: squadId } }),
+    ])
+
+    // Send execution complete email (non-blocking)
+    if (user && squad) {
+      sendExecutionCompleteEmailNonBlocking(
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          locale: user.locale,
+        },
+        {
+          id: jobId,
+          squadId,
+          status: 'completed',
+          completedAt: new Date().toISOString(),
+        },
+        {
+          id: squad.id,
+          name: squad.name,
+          description: squad.description,
+        }
+      )
+    }
+
     const waitKey = `${CHECKPOINT_WAIT_PREFIX}${jobId}`
     await redis.del(`${EXECUTION_PREFIX}${jobId}`)
     await redis.del(waitKey)

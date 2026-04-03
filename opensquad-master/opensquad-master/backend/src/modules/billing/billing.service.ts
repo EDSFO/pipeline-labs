@@ -1,6 +1,7 @@
 import { stripe } from '../../lib/stripe'
 import { prisma } from '../../lib/prisma'
 import Stripe from 'stripe'
+import { sendPurchaseConfirmationEmailNonBlocking } from '../notifications/email.service'
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
 
@@ -178,6 +179,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
+  // Fetch user and squad for email
+  const [user, squad] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId } }),
+    prisma.squad.findUnique({ where: { id: squadId } }),
+  ])
+
   // Store the payment ID on the user
   if (session.payment_intent && typeof session.payment_intent === 'string') {
     await prisma.userSquad.upsert({
@@ -199,6 +206,23 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         isActive: true,
       },
     })
+  }
+
+  // Send purchase confirmation email (non-blocking)
+  if (user && squad) {
+    sendPurchaseConfirmationEmailNonBlocking(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        locale: user.locale,
+      },
+      {
+        id: squad.id,
+        name: squad.name,
+        description: squad.description,
+      }
+    )
   }
 }
 
