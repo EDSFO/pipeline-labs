@@ -9,5 +9,78 @@
     "pricing": "Preços",
     "login": "Entrar",
     "register": "Cadastrar"
+  },
+  "hero": {
+    "title": "Squads de Agentes de IA para criar conteúdo em escala",
+    "subtitle": "Monte equipes de agentes especializados que trabalham juntos para gerar conteúdo de alta qualidade para Instagram, LinkedIn, blogs e muito mais.",
+    "cta": "Começar Agora",
+    "link": "Cadastre-se gratuitamente"
+  },
+  "features": {
+    "title": "Funcionalidades Poderoses",
+    "subtitle": "Tudo que você precisa para criar conteúdo com IA",
+    "multiAgent": {
+      "title": "Squads Multi-Agente",
+      "description": "Equipes de agentes especializados que colaboram para criar conteúdo superior"
+    },
+    "checkpoint": {
+      "title": "Aprovações com Checkpoint",
+      "description": "Pare a execução a qualquer momento para revisar e aprovar o conteúdo gerado"
+    },
+    "languages": {
+      "title": "PT-BR + EN-US",
+      "description": "Suporte nativo para português brasileiro e inglês americano"
+    },
+    "payments": {
+      "title": "Pagamentos via Stripe",
+      "description": "Assinaturas simples e seguras com Stripe"
+    }
+  },
+  "howItWorks": {
+    "title": "Como Funciona",
+    "subtitle": "Comece a criar conteúdo em 3 passos",
+    "step1": "Cadastre-se",
+    "step1Desc": "Crie sua conta gratuitamente e escolha seu plano",
+    "step2": "Escolha seu Squad",
+    "step2Desc": "Selecione entre nossos squads especializados ou crie o seu",
+    "step3": "Execute",
+    "step3Desc": "Rode o squad e receba conteúdo de alta qualidade"
+  },
+  "squadShowcase": {
+    "title": "Squads Disponíveis",
+    "subtitle": "Escolha entre nossos squads especializados",
+    "viewDetails": "Ver Detalhes"
+  },
+  "pricing": {
+    "title": "Planos e Preços",
+    "subtitle": "A partir de R$39/mês",
+    "description": "Escolha o plano ideal para sua necessidade. Todos os planos incluem acesso a todos os squads.",
+    "perMonth": "/mês",
+    "popular": "Mais Popular"
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Tire suas dúvidas",
+    "q1": "O que é um Squad de agentes?",
+    "a1": "Um Squad é uma equipe de agentes de IA que trabalham juntos para completar uma tarefa. Cada agente tem um papel específico, como redator, editor ou designer, e eles colaboram para produzir conteúdo de alta qualidade.",
+    "q2": "Preciso saber programar?",
+    "a2": "Não! Nossa plataforma é 100% visual. Você escolhe o squad, configura as opções e executa. Todo o trabalho complexo é feito pelos agentes automaticamente.",
+    "q3": "Posso cancelar a qualquer momento?",
+    "a3": "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais.",
+    "q4": "Como funciona o checkpoint?",
+    "a4": "O checkpoint permite que você pause a execução do squad a qualquer momento para revisar o conteúdo gerado. Você pode aprovar, pedir ajustes ou cancelar a execução."
+  },
+  "footer": {
+    "description": "Squads de agentes de IA para criar conteúdo em escala",
+    "rights": "Todos os direitos reservados",
+    "product": "Produto",
+    "company": "Empresa",
+    "legal": "Legal",
+    "features": "Funcionalidades",
+    "pricing": "Preços",
+    "about": "Sobre",
+    "contact": "Contato",
+    "privacy": "Privacidade",
+    "terms": "Termos"
   }
 }
