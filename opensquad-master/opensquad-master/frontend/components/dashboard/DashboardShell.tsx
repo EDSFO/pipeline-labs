@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Menu, X } from 'lucide-react'
+import { useRouter, usePathname } from 'next/navigation'
+import { Menu, X, Loader2 } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 
@@ -12,15 +12,28 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
+  const locale = pathname.startsWith('/pt-BR') ? 'pt-BR' : 'en-US'
 
   // Check for JWT token on mount
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
-      router.push('/auth/login')
+      router.push(`/${locale}/auth/login`)
+    } else {
+      setIsLoading(false)
     }
-  }, [router])
+  }, [router, locale])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

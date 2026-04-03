@@ -45,7 +45,7 @@ export function Header({ userName = 'User' }: HeaderProps) {
 
   const handleLogout = () => {
     localStorage.removeItem('token')
-    router.push('/auth/login')
+    router.push(`/${currentLocale}/auth/login`)
   }
 
   return (
