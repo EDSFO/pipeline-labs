@@ -165,6 +165,16 @@
     },
     "save": "Save"
   },
+  "billing": {
+    "title": "Subscription & Payments",
+    "description": {
+      "manage": "Manage your subscription, view invoices, and update payment information.",
+      "noSubscription": "Visit the marketplace to purchase squads."
+    },
+    "manageSubscription": "Manage Subscription",
+    "openPortal": "Open Payment Portal",
+    "portalError": "Unable to open payment portal. Please make sure you have made a purchase first."
+  },
   "footer": {
     "description": "AI agent squads to create content at scale",
     "rights": "All rights reserved",

@@ -165,6 +165,16 @@
     },
     "save": "Salvar"
   },
+  "billing": {
+    "title": "Assinatura e Pagamentos",
+    "description": {
+      "manage": "Gerencie sua assinatura, visualize faturas e atualize informações de pagamento.",
+      "noSubscription": "Visite o marketplace para adquirir squads."
+    },
+    "manageSubscription": "Gerenciar Assinatura",
+    "openPortal": "Abrir Portal de Pagamentos",
+    "portalError": "Não foi possível abrir o portal de pagamentos. Verifique se você já fez uma compra."
+  },
   "footer": {
     "description": "Squads de agentes de IA para criar conteúdo em escala",
     "rights": "Todos os direitos reservados",

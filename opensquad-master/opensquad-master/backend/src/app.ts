@@ -3,6 +3,7 @@ import cors from '@fastify/cors'
 import { authPlugin } from './modules/auth/index'
 import { userRoutes } from './modules/user/user.routes'
 import { squadRoutes } from './modules/squad/squad.routes'
+import { billingRoutes } from './modules/billing/billing.routes'
 
 const fastify = Fastify({
   logger: {
@@ -15,6 +16,16 @@ const fastify = Fastify({
       },
     },
   },
+})
+
+// Add content type parser for raw body (needed for Stripe webhooks)
+fastify.addContentTypeParser('application/json', { parseAs: 'buffer' }, (req, body, done) => {
+  try {
+    req.rawBody = body
+    done(null, JSON.parse(body.toString()))
+  } catch (err) {
+    done(err as Error, undefined)
+  }
 })
 
 async function start() {
@@ -33,6 +44,9 @@ async function start() {
 
     // Register squad routes
     await fastify.register(squadRoutes)
+
+    // Register billing routes
+    await fastify.register(billingRoutes)
 
     // Health check endpoint
     fastify.get('/health', async () => {

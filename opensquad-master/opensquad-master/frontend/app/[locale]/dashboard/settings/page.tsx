@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, FormField, Form } from '@/components/ui/form-components'
+import { BillingPortal } from '@/components/dashboard/BillingPortal'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
 
@@ -16,6 +17,8 @@ interface UserProfile {
   name: string
   email: string
   locale: string
+  stripeCustomerId: string | null
+  subscriptionId: string | null
 }
 
 const profileSchema = z.object({
@@ -324,6 +327,9 @@ export default function SettingsPage() {
           </Button>
         </Form>
       </div>
+
+      {/* Billing Section */}
+      <BillingPortal hasSubscription={!!profile?.subscriptionId} />
     </div>
   )
 }

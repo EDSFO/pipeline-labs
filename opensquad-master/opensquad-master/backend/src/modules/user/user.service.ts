@@ -21,6 +21,8 @@ export interface UserProfile {
   plan: string
   squadLimit: number
   isActive: boolean
+  stripeCustomerId: string | null
+  subscriptionId: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -36,6 +38,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       plan: true,
       squadLimit: true,
       isActive: true,
+      stripeCustomerId: true,
+      subscriptionId: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -62,6 +66,8 @@ export async function updateUserProfile(
       plan: true,
       squadLimit: true,
       isActive: true,
+      stripeCustomerId: true,
+      subscriptionId: true,
       createdAt: true,
       updatedAt: true,
     },

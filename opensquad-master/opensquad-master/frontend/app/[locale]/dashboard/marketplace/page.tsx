@@ -56,12 +56,34 @@ export default function MarketplacePage() {
 
   const handleBuy = async (squadId: string) => {
     setBuyingId(squadId)
-    // TODO: Implement purchase logic with Stripe
-    // For now, just simulate a delay
-    setTimeout(() => {
+
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('No token found')
+      }
+
+      const response = await fetch(`${BACKEND_URL}/billing/checkout`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ squadId }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'An error occurred')
       setBuyingId(null)
-      alert(`TODO: Implement Stripe checkout for squad ${squadId}`)
-    }, 1000)
+    }
   }
 
   const filteredSquads = selectedCategory === 'all'

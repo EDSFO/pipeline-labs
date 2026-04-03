@@ -22,6 +22,7 @@ declare module '@fastify/jwt' {
 declare module 'fastify' {
   interface FastifyRequest {
     user: JwtPayload
+    rawBody?: Buffer | string
   }
 }
 
