@@ -8,7 +8,12 @@
     "features": "Funcionalidades",
     "pricing": "Preços",
     "login": "Entrar",
-    "register": "Cadastrar"
+    "register": "Cadastrar",
+    "marketplace": "Marketplace",
+    "meuSquads": "Meus Squads",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "version": "Versão"
   },
   "hero": {
     "title": "Squads de Agentes de IA para criar conteúdo em escala",
@@ -108,6 +113,10 @@
     "a3": "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais.",
     "q4": "Como funciona o checkpoint?",
     "a4": "O checkpoint permite que você pause a execução do squad a qualquer momento para revisar o conteúdo gerado. Você pode aprovar, pedir ajustes ou cancelar a execução."
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo ao seu dashboard",
+    "subtitle": "Gerencie seus squads e conteúdos em um só lugar"
   },
   "footer": {
     "description": "Squads de agentes de IA para criar conteúdo em escala",

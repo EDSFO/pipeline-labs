@@ -8,7 +8,12 @@
     "features": "Features",
     "pricing": "Pricing",
     "login": "Login",
-    "register": "Register"
+    "register": "Register",
+    "marketplace": "Marketplace",
+    "meuSquads": "My Squads",
+    "settings": "Settings",
+    "logout": "Logout",
+    "version": "Version"
   },
   "hero": {
     "title": "AI Agent Squads to create content at scale",
@@ -108,6 +113,10 @@
     "a3": "Yes! You can cancel your subscription at any time, without penalties or additional fees.",
     "q4": "How does checkpoint work?",
     "a4": "Checkpoint allows you to pause squad execution at any time to review the generated content. You can approve it, request adjustments, or cancel the execution."
+  },
+  "dashboard": {
+    "welcome": "Welcome to your dashboard",
+    "subtitle": "Manage your squads and content from one place"
   },
   "footer": {
     "description": "AI agent squads to create content at scale",
