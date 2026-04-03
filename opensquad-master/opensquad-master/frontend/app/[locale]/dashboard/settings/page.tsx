@@ -155,7 +155,7 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          currentPassword: data.currentPassword,
+          oldPassword: data.currentPassword,
           newPassword: data.newPassword,
         }),
       })
