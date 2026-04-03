@@ -14,7 +14,21 @@
     "title": "AI Agent Squads to create content at scale",
     "subtitle": "Build teams of specialized agents that work together to generate high-quality content for Instagram, LinkedIn, blogs and more.",
     "cta": "Get Started",
-    "link": "Sign up for free"
+    "link": "Sign up for free",
+    "features": {
+      "multiagent": {
+        "label": "Multi-Agent",
+        "sublabel": "Collaboration"
+      },
+      "checkpoint": {
+        "label": "Checkpoint",
+        "sublabel": "Approvals"
+      },
+      "languages": {
+        "label": "PT-BR + EN",
+        "sublabel": "Languages"
+      }
+    }
   },
   "features": {
     "title": "Powerful Features",
@@ -49,14 +63,39 @@
   "squadShowcase": {
     "title": "Available Squads",
     "subtitle": "Choose from our specialized squads",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+    "squads": {
+      "instagram-carousel": {
+        "name": "Instagram Carousel",
+        "description": "Create engaging Instagram carousels with multiple slides optimized for engagement."
+      },
+      "linkedin-posts": {
+        "name": "LinkedIn Posts",
+        "description": "Generate professional LinkedIn posts that spark conversations and connections."
+      },
+      "tutorial-generator": {
+        "name": "Tutorial Generator",
+        "description": "Create detailed step-by-step tutorials for any process or product."
+      }
+    }
   },
   "pricing": {
     "title": "Plans and Pricing",
     "subtitle": "Starting at R$39/month",
     "description": "Choose the plan that's right for you. All plans include access to all squads.",
     "perMonth": "/month",
-    "popular": "Most Popular"
+    "popular": "Most Popular",
+    "plan": {
+      "name": "Starter",
+      "features": [
+        "Access to all squads",
+        "Up to 50 executions per month",
+        "Checkpoint approvals",
+        "PT-BR + EN-US support",
+        "Stripe payments"
+      ],
+      "cta": "Get Started"
+    }
   },
   "faq": {
     "title": "Frequently Asked Questions",

@@ -14,7 +14,21 @@
     "title": "Squads de Agentes de IA para criar conteúdo em escala",
     "subtitle": "Monte equipes de agentes especializados que trabalham juntos para gerar conteúdo de alta qualidade para Instagram, LinkedIn, blogs e muito mais.",
     "cta": "Começar Agora",
-    "link": "Cadastre-se gratuitamente"
+    "link": "Cadastre-se gratuitamente",
+    "features": {
+      "multiagent": {
+        "label": "Multi-Agent",
+        "sublabel": "Collaboration"
+      },
+      "checkpoint": {
+        "label": "Checkpoint",
+        "sublabel": "Approvals"
+      },
+      "languages": {
+        "label": "PT-BR + EN",
+        "sublabel": "Languages"
+      }
+    }
   },
   "features": {
     "title": "Funcionalidades Poderoses",
@@ -49,14 +63,39 @@
   "squadShowcase": {
     "title": "Squads Disponíveis",
     "subtitle": "Escolha entre nossos squads especializados",
-    "viewDetails": "Ver Detalhes"
+    "viewDetails": "Ver Detalhes",
+    "squads": {
+      "instagram-carousel": {
+        "name": "Carrossel Instagram",
+        "description": "Crie carrosséis envolventes para Instagram com múltiplos slides otimizados para engajamento."
+      },
+      "linkedin-posts": {
+        "name": "Posts LinkedIn",
+        "description": "Gere posts profissionais para LinkedIn que geram conversas e conexões."
+      },
+      "tutorial-generator": {
+        "name": "Gerador de Tutoriais",
+        "description": "Crie tutoriais passo a passo detalhados para qualquer processo ou produto."
+      }
+    }
   },
   "pricing": {
     "title": "Planos e Preços",
     "subtitle": "A partir de R$39/mês",
     "description": "Escolha o plano ideal para sua necessidade. Todos os planos incluem acesso a todos os squads.",
     "perMonth": "/mês",
-    "popular": "Mais Popular"
+    "popular": "Mais Popular",
+    "plan": {
+      "name": "Starter",
+      "features": [
+        "Acesso a todos os squads",
+        "Até 50 execuções por mês",
+        "Checkpoint approvals",
+        "Suporte PT-BR + EN-US",
+        "Pagamentos via Stripe"
+      ],
+      "cta": "Começar Agora"
+    }
   },
   "faq": {
     "title": "Perguntas Frequentes",

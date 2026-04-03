@@ -49,8 +49,8 @@ export default async function Hero() {
                 <Bot className="w-6 h-6 text-blue-600" />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900">Multi-Agent</p>
-                <p className="text-sm text-slate-500">Collaboration</p>
+                <p className="font-semibold text-slate-900">{t('features.multiagent.label')}</p>
+                <p className="text-sm text-slate-500">{t('features.multiagent.sublabel')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 justify-center">
@@ -58,8 +58,8 @@ export default async function Hero() {
                 <Zap className="w-6 h-6 text-green-600" />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900">Checkpoint</p>
-                <p className="text-sm text-slate-500">Approvals</p>
+                <p className="font-semibold text-slate-900">{t('features.checkpoint.label')}</p>
+                <p className="text-sm text-slate-500">{t('features.checkpoint.sublabel')}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 justify-center">
@@ -67,8 +67,8 @@ export default async function Hero() {
                 <Globe className="w-6 h-6 text-purple-600" />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-slate-900">PT-BR + EN</p>
-                <p className="text-sm text-slate-500">Languages</p>
+                <p className="font-semibold text-slate-900">{t('features.languages.label')}</p>
+                <p className="text-sm text-slate-500">{t('features.languages.sublabel')}</p>
               </div>
             </div>
           </div>

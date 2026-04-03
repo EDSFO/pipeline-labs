@@ -22,7 +22,7 @@ export default async function Pricing() {
         <div className="max-w-md mx-auto">
           <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold mb-2">Starter</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('plan.name')}</h3>
               <div className="flex items-baseline justify-center">
                 <span className="text-4xl font-bold text-white">R$ 39</span>
                 <span className="text-slate-400 ml-1">{t('perMonth')}</span>
@@ -30,13 +30,7 @@ export default async function Pricing() {
             </div>
 
             <ul className="space-y-4 mb-8">
-              {[
-                'Acesso a todos os squads',
-                ' ate 50 execucoes por mes',
-                'Checkpoint approvals',
-                'Suporte PT-BR + EN-US',
-                'Pagamentos via Stripe',
-              ].map((feature, index) => (
+              {t.raw('plan.features').map((feature: string, index: number) => (
                 <li key={index} className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
                   <span className="text-slate-300">{feature}</span>
@@ -45,7 +39,7 @@ export default async function Pricing() {
             </ul>
 
             <button className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
-              Comecar Agora
+              {t('plan.cta')}
             </button>
           </div>
         </div>
