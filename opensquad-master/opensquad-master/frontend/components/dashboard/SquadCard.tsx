@@ -10,7 +10,6 @@ interface SquadCardProps {
   description: string
   price: number
   currency: 'BRL' | 'USD'
-  locale: string
   isLoading?: boolean
   onBuy?: (id: string) => void
 }
@@ -21,7 +20,6 @@ export function SquadCard({
   description,
   price,
   currency,
-  locale,
   isLoading = false,
   onBuy,
 }: SquadCardProps) {

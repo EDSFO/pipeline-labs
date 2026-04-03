@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
-import { usePathname } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 import { SquadCard } from '@/components/dashboard/SquadCard'
 import { SquadFilter } from '@/components/dashboard/SquadFilter'
@@ -20,8 +19,7 @@ interface Squad {
 
 export default function MarketplacePage() {
   const t = useTranslations('marketplace')
-  const pathname = usePathname()
-  const locale = pathname.startsWith('/pt-BR') ? 'pt-BR' : 'en-US'
+  const locale = useLocale()
 
   const [squads, setSquads] = useState<Squad[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -118,7 +116,6 @@ export default function MarketplacePage() {
               description={squad.description}
               price={squad.price}
               currency={squad.currency}
-              locale={locale}
               isLoading={buyingId === squad.id}
               onBuy={handleBuy}
             />
