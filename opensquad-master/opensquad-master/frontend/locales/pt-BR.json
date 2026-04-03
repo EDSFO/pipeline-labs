@@ -121,5 +121,25 @@
     "contact": "Contato",
     "privacy": "Privacidade",
     "terms": "Termos"
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "email": "Email",
+      "password": "Senha",
+      "submit": "Entrar",
+      "noAccount": "Não tem uma conta?",
+      "link": "Cadastre-se"
+    },
+    "register": {
+      "title": "Criar Conta",
+      "name": "Nome",
+      "email": "Email",
+      "password": "Senha",
+      "confirmPassword": "Confirmar Senha",
+      "submit": "Criar Conta",
+      "hasAccount": "Já tem uma conta?",
+      "link": "Entrar"
+    }
   }
 }
