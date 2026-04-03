@@ -67,7 +67,11 @@ export async function webhookHandler(
   reply: FastifyReply
 ): Promise<void> {
   const sig = request.headers['stripe-signature'] as string
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    reply.status(500).send({ error: 'Webhook secret not configured' })
+    return
+  }
 
   let event: Stripe.Event
 
