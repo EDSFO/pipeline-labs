@@ -130,6 +130,17 @@
     },
     "empty": "No squads available"
   },
+  "meuSquads": {
+    "title": "My Squads",
+    "subtitle": "Manage your purchased squads",
+    "execute": "Run",
+    "activating": "Activating...",
+    "deactivating": "Deactivating...",
+    "active": "Active",
+    "inactive": "Inactive",
+    "empty": "You don't have any squads yet",
+    "emptySubtitle": "Visit the marketplace to purchase your first squad"
+  },
   "footer": {
     "description": "AI agent squads to create content at scale",
     "rights": "All rights reserved",

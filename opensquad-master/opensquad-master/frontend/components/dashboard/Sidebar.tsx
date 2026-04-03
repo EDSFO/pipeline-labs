@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/dashboard/marketplace', labelKey: 'marketplace', icon: Store },
-  { href: '/dashboard/squads', labelKey: 'meuSquads', icon: Users },
+  { href: '/dashboard/meus-squads', labelKey: 'meuSquads', icon: Users },
   { href: '/dashboard/settings', labelKey: 'settings', icon: Settings },
 ]
 

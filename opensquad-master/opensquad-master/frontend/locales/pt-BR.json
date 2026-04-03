@@ -130,6 +130,17 @@
     },
     "empty": "Nenhum squad disponível"
   },
+  "meuSquads": {
+    "title": "Meus Squads",
+    "subtitle": "Gerencie seus squads adquiridos",
+    "execute": "Executar",
+    "activating": "Ativando...",
+    "deactivating": "Desativando...",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "empty": "Você ainda não possui nenhum squad",
+    "emptySubtitle": "Visite o marketplace para adquirir seu primeiro squad"
+  },
   "footer": {
     "description": "Squads de agentes de IA para criar conteúdo em escala",
     "rights": "Todos os direitos reservados",
