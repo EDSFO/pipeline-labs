@@ -70,9 +70,8 @@ backup_database() {
 
 # Restart services
 restart_services() {
-    log_info "Restarting services..."
-    docker-compose -f $COMPOSE_FILE down
-    docker-compose -f $COMPOSE_FILE up -d
+    log_info "Restarting services with rolling rebuild..."
+    docker-compose -f $COMPOSE_FILE up -d --build
 }
 
 # Wait for services to be healthy
