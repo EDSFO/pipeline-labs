@@ -55,7 +55,8 @@ jobs:
         run: mypy src/notebooklm
 
       - name: Run pre-commit
-        run: pre-commit run --all-files
+        shell: bash
+        run: pre-commit run --files $(git ls-files .)
 
   unit-tests:
     name: Unit Tests (${{ matrix.python-version }})
