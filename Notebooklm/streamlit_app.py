@@ -556,10 +556,7 @@ def main():
 
     selected_source_ids = []
     if current_sources:
-        source_labels = {
-            src.id: (src.title or src.url or src.id)
-            for src in current_sources
-        }
+        source_labels = {src.id: (src.title or src.url or src.id) for src in current_sources}
         selected_source_ids = st.multiselect(
             "Fontes para usar no infografico:",
             options=list(source_labels.keys()),
@@ -758,7 +755,9 @@ def main():
                 st.session_state.infographic_path = None
                 st.rerun()
         elif st.session_state.infographic_ready and infographic_path:
-            st.warning("O infografico foi gerado, mas o arquivo local nao foi encontrado para download.")
+            st.warning(
+                "O infografico foi gerado, mas o arquivo local nao foi encontrado para download."
+            )
         else:
             st.info("Adicione uma fonte e clique em gerar.")
 
@@ -839,7 +838,9 @@ def main():
                         if status.is_complete:
                             output_dir = tempfile.mkdtemp()
                             extension = "pdf" if slide_download_format == "pdf" else "pptx"
-                            output_path = Path(output_dir) / f"slide_deck_{slide_task_id}.{extension}"
+                            output_path = (
+                                Path(output_dir) / f"slide_deck_{slide_task_id}.{extension}"
+                            )
                             asyncio.run(
                                 async_download_slide_deck(
                                     auth,
@@ -908,7 +909,9 @@ def main():
                 st.session_state.slide_path = None
                 st.rerun()
         elif st.session_state.slide_ready and slide_path:
-            st.warning("A apresentacao foi gerada, mas o arquivo local nao foi encontrado para download.")
+            st.warning(
+                "A apresentacao foi gerada, mas o arquivo local nao foi encontrado para download."
+            )
         else:
             st.info("Adicione uma fonte e clique em gerar a apresentacao.")
 
