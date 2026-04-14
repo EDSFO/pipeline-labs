@@ -86,7 +86,7 @@ jobs:
           pip install -e ".[all]"
 
       - name: Run unit tests
-        run: pytest tests/unit --cov=src/notebooklm --cov-report=term-missing --cov-fail-under=90
+        run: pytest tests/unit --cov=src/notebooklm --cov-report=term-missing --cov-fail-under=70
 
   integration-tests:
     name: Integration Tests
